@@ -2,12 +2,12 @@
 import PackageDescription
 
 let package = Package(
-    name: "site",
+    name: "swiftonserver-articles",
     platforms: [
         .macOS(.v14),
     ],
     products: [
-        .library(name: "site", targets: ["site"]),
+        .library(name: "Articles", targets: ["Articles"]),
     ],
     dependencies: [
         .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0-rc.3"),
@@ -21,7 +21,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "site",
+            name: "Articles",
             dependencies: [
                 .product(name: "Hummingbird", package: "hummingbird"),
                 .product(name: "HummingbirdRouter", package: "hummingbird"),
@@ -33,6 +33,7 @@ let package = Package(
                 .product(name: "ServiceLifecycle", package: "swift-service-lifecycle"),
                 .product(name: "HummingbirdWebSocket", package: "hummingbird-websocket"),
                 .product(name: "HummingbirdWSCompression", package: "hummingbird-websocket"),
+                .product(name: "Mustache", package: "swift-mustache"),
             ],
             packageAccess: true
         )
