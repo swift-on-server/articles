@@ -12,7 +12,7 @@ In this tutorial, you'll learn how to build a UDP server using SwiftNIO. You'll 
 
 ## How UDP Works
 
-Unlike TCP, UDP sockets don't distinguish between client and server. Any client that sends a packet to a UDP socket needs to bind to a oprt to receive a response. This makes UDP a connectionless protocol, as it doesn't establish a connection before sending data. Instead, it sends packets directly to the destination.
+Unlike TCP, UDP sockets don't distinguish between client and server. Any client that sends a packet to a UDP socket needs to bind to a port to receive a response. This makes UDP a connectionless protocol, as it doesn't establish a connection before sending data. Instead, it sends packets directly to the destination.
 
 In order to start accepting packets, bind a UDP socket to a port:
 
