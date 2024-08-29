@@ -2,7 +2,7 @@
 
 When you visit this website, you're using an HTTP connection to fetch the content. HTTP/1 and HTTP/2 both use TCP sockets to establish a connection.
 
-TCP is a helful tool, as it provides reliability to your network connections, guaranteeing a datastream's integrity in and delivery through receipts. These receipts, however, do incur additional overhead on the connection. When a TCP packet is lost, the connection will wait for the packet to be retransmitted before continuing. This can be a problem for applications that need to send data quickly, such as online games and audio/video calls where real-time interaction is critical. For some applications, this overhead is too much or simply unnecessary, and they prefer to use UDP instead.
+TCP is a helpful tool, as it provides reliability to your network connections, guaranteeing a datastream's integrity in and delivery through receipts. These receipts, however, do incur additional overhead on the connection. When a TCP packet is lost, the connection will wait for the packet to be retransmitted before continuing. This can be a problem for applications that need to send data quickly, such as online games and audio/video calls where real-time interaction is critical. For some applications, this overhead is too much or simply unnecessary, and they prefer to use UDP instead.
 
 ### What is UDP?
 
