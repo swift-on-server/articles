@@ -39,7 +39,7 @@ Inbound is a stream of incoming packets, whereas outbound is a writer that you c
 
 ### Testing the Server
 
-Now that you've got your code ready, just run the app on your mac. Then, from your terminal, run the following command:
+The nc (NetCat) command is a popular tool for managing network connections. Its main use is to establish and handle them. After your code is ready, start the app on your Mac, and run the following command in your terminal:
 
 ```sh
 echo "Hello, UDP" | nc -u 127.0.0.1 2048 -p 2049
