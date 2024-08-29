@@ -4,9 +4,10 @@ import NIOPosix
 // snippet.bootstrap
 // 1.
 let server = try await DatagramBootstrap(group: NIOSingletons.posixEventLoopGroup)
-    // 2..
+    // 2.
     .bind(host: "0.0.0.0", port: 2048)
     .flatMapThrowing { channel in
+        // 3.
         return try NIOAsyncChannel(
             wrappingChannelSynchronously: channel,
             configuration: NIOAsyncChannel.Configuration(
