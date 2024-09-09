@@ -17,13 +17,13 @@ This is _mostly_ a regular markdown file representing your article, with two not
 Our rendering engine, [swiftinit](https://swiftinit.org), can link DocC symbol links to any dependency of our project. As such, all mentions of types or functions should use two backticks rather than one.
 
 ```
-\`\`ByteBuffer\`\`
+``ByteBuffer``
 ```
 
 You can also render functions and properties that are members of types.
 
 ```
-\`\`TaskGroup.addTask(priority:operation:)\`\`
+``TaskGroup.addTask(priority:operation:)``
 ```
 
 ### Swift Snippets
