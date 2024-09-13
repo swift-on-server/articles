@@ -157,7 +157,7 @@ Some documentation engines such as [Unidoc](https://github.com/tayloraswift/swif
 >   Important:
 >   DocC does not currently support referencing Snippets by ID. Instead, you must use the fully-qualified `path` syntax to reference a Snippet.
 
-You should now have a project layout that looks like this:
+The project layout should now look like this:
 
 ```
 📂 swift-snippets
