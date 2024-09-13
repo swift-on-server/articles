@@ -142,7 +142,7 @@ $ mkdir -p Sources/SnippetsExample/docs.docc
 
 Create a markdown article named `My article.md` in the `docs.docc` directory.
 
-@Code(name: "My article.md", file: "My article (2).md.txt")
+@Code(name: "My article.md", file: "My article (1).md.txt")
 
 In the example above, we have specified the Snippet to include by `path` identity.
 
@@ -152,7 +152,7 @@ If the Snippet ID contains special characters, you should pass the ID as-is, wit
 
 Some documentation engines such as [Unidoc](https://github.com/tayloraswift/swift-unidoc) support referencing Snippets by `id`.
 
-@Code(name: "My article.md", file: "My article (1).md.txt")
+@Code(name: "My article.md", file: "My article (2).md.txt")
 
 >   Important:
 >   DocC does not currently support referencing Snippets by ID. Instead, you must use the fully-qualified `path` syntax to reference a Snippet.
