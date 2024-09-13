@@ -1,6 +1,8 @@
 # Getting started with SwiftPM Snippets
 
-[SwiftPM Snippets](https://github.com/apple/swift-evolution/blob/main/proposals/0356-swift-snippets.md) are one of the most powerful features of the [Swift Package Manager](https://github.com/apple/swift-package-manager), and yet two years after their introduction few developers know they exist. This tutorial will explain some of the advantages of using SwiftPM Snippets and show you how to add Snippets to a Swift package, preview them in documentation locally using [DocC](https://github.com/apple/swift-docc), render them in [Unidoc](https://github.com/tayloraswift/swift-unidoc), and publish them on your own website or a centralized platform like [Swiftinit](https://swiftinit.org) where readers can view their code and interact with the symbols contained within them.
+[SwiftPM Snippets](https://github.com/apple/swift-evolution/blob/main/proposals/0356-swift-snippets.md) are one of the most powerful features of the [Swift Package Manager](https://github.com/apple/swift-package-manager), and yet two years after their introduction few developers know they exist. This tutorial will explain some of the advantages of using SwiftPM Snippets and show you how to add Snippets to a Swift package.
+
+In this tutorial, we will use the Apple [DocC](https://github.com/apple/swift-docc) tool to preview and iterate on Snippets locally. The DocC tool itself does not support rendering clickable references within Snippets, however the finished SwiftPM project containing Snippets can be published to a platform like [Swiftinit](https://swiftinit.org) where the Snippets will be rendered with clickable references, allowing readers to interact with the symbols contained within them and navigate to supplemental documentation.
 
 
 ## What are Swift Snippets?
@@ -12,6 +14,10 @@ Despite their immense potential, very little documentation exists on how to use 
 > The outlook for this feature is pessimistic considering the low adoption rate. This might change if Apple invests in better documentation and adopts Snippets in their own repositories.
 >
 > — [A critical look at Swift Snippets](https://blog.eidinger.info/a-critical-look-at-swift-snippets-swift-57) by Marco Eidinger
+
+
+>   Warning:
+>   There is a known [Xcode bug](http://ww.openradar.appspot.com/FB13482049) that prevents Snippets from being shown in the Xcode editor.
 
 
 ## Why use Swift Snippets?
@@ -39,7 +45,7 @@ For this tutorial, we will create a package named `snippets-example`.
 
 ```bash
 $ mkdir snippets-example
-$ cd snippets-example
+$ cd $_
 $ swift package init --name 'Swift Snippets'
 ```
 
@@ -50,6 +56,8 @@ This should initialize a new Swift package with a `Package.swift` resembling the
 Rename the library target to `SnippetsExample`.
 
 @Code(name: "Package.swift", file: Manifest.2.swift)
+
+Make sure the `Sources/SnippetsExample` directory contains at least one Swift file. For this tutorial, we will add an empty file named `anchor.swift`.
 
 Next, create a new directory named `Snippets` at the top level of the package.
 
@@ -63,7 +71,7 @@ Inside the `Snippets` directory, create a new Swift file named `SnippetsExample_
 
 @Snippet(id: "SnippetsExample_I")
 
-You should now have a directory structure that looks like this:
+The directory structure should now look like this:
 
 ```
 📂 swift-snippets
@@ -76,7 +84,7 @@ You should now have a directory structure that looks like this:
 └── 📄 .gitignore
 ```
 
-That’s it!
+The Swift package now contains the Snippet file and is ready to be built.​
 
 
 ## Running Snippets
@@ -136,9 +144,13 @@ Create a markdown article named `My article.md` in the `docs.docc` directory.
 
 @Code(name: "My article.md", file: "My article (2).md.txt")
 
-In the example above, we have specified the Snippet to include by `path` identity. Despite its naming, the `path` syntax is not a file path. The first component is the name of the package **as specified by the ``PackageDescription/Package/name`` field in the manifest**. The second component is always the string `Snippets`. The third component is the Snippet ID, which is the name of the Snippet file without the `.swift` extension. If the Snippet ID contains special characters, you should pass the ID as-is, without replacing any characters.
+In the example above, we have specified the Snippet to include by `path` identity.
 
-Some documentation engines such as Unidoc support referencing Snippets by `id`.
+Despite its naming, the `path` syntax is not a file path. The first component is the name of the package **as specified by the ``PackageDescription/Package/name`` field in the manifest**. The second component is always the string `Snippets`. The third component is the Snippet ID, which is the name of the Snippet file without the `.swift` extension.
+
+If the Snippet ID contains special characters, you should pass the ID as-is, without replacing any characters.
+
+Some documentation engines such as [Unidoc](https://github.com/tayloraswift/swift-unidoc) support referencing Snippets by `id`.
 
 @Code(name: "My article.md", file: "My article (1).md.txt")
 
@@ -166,6 +178,8 @@ You should now have a project layout that looks like this:
 Many developers find [DocC](https://github.com/apple/swift-docc) helpful for previewing documentation locally. To use DocC, add the [swift-docc-plugin](https://github.com/apple/swift-docc-plugin) to the package manifest.
 
 @Code(name: Package.swift, file: Manifest.3.swift)
+
+Please note that while it is possible to build DocC documentation using Xcode, Snippets will not render, due to [FB13482049](http://ww.openradar.appspot.com/FB13482049).
 
 You can then launch DocC with the `preview-documentation` package subcommand:
 
@@ -244,7 +258,7 @@ Below is an example of a Snippet with a caption and three named slices.
 
 Here’s how you might embed the slices in a Markdown article.
 
-@Code(name: "My article.md", file: "My article (6).md.txt")
+@Code(name: "My article.md", file: "My article (3).md.txt")
 
 And here’s how the embedded slices should look.
 
@@ -255,10 +269,10 @@ And here’s how the embedded slices should look.
 @Snippet(id: SnippetsExample_V, slice: EXIT)
 
 
-## Rendering Snippets with linkable references
+## Where to go from here
 
-Some documentation engines such as Unidoc support rendering Snippets with linked identifiers. This is possible because Snippets are compiled along with the rest of the package, allowing them to be mapped by [IndexStoreDB](https://github.com/apple/indexstore-db).
+DocC cannot read the metadata emitted by the Swift compiler that associates the tokens in a Snippet with their definitions, nor can it link to symbols that originate from a package’s dependencies.
 
-Although DocC currently does not support previewing Snippets with linked symbols, platforms like Swiftinit will automatically link Snippet references when you publish your documentation on the internet. Third-party websites (such as Swift on Server itself) can also leverage this feature through the [Swiftinit API](https://swiftinit.org/help/exporting-articles).
+However, other documentation engines such as [Unidoc](https://github.com/tayloraswift/swift-unidoc) do support rendering Snippets with linked identifiers, and you can easily leverage this feature by publishing your documentation to a platform like [Swiftinit](https://swiftinit.org/help/self-serve). Because the Swift compiler already checks that the Snippets are valid and buildable, most DocC documentation can be uploaded to Swiftinit as-is without additional iteration.
 
-If your package is not yet indexed by Swiftinit, you can follow the instructions on the [Swiftinit website](https://swiftinit.org/help/self-serve) to add your package to the index.
+Third-party websites (such as Swift on Server itself) can also leverage this feature through the [Swiftinit API](https://swiftinit.org/help/exporting-articles).
