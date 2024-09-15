@@ -1,6 +1,6 @@
 # Enabling HTTP/2 in Hummingbird
 
-Hummingbird features a flexible architecture that allows swapping various components in and out. This flexibility extends to the networking layer, where you can easily swap out the default HTTP/1 networking code for one supporting HTTP/2.
+[Hummingbird](https://hummingbird.codes) features a flexible architecture that allows swapping various components in and out. This flexibility extends to the networking layer, where you can easily swap out the default HTTP/1 networking code for one supporting HTTP/2.
 
 ## Package Manifest
 
