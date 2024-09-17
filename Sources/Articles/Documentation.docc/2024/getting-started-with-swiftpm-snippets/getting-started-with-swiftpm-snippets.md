@@ -213,11 +213,11 @@ When embedded, it should look like this:
 
 You can redact portions of a Snippet using **slice directives**. A slice directive is a line comment token that starts with `snippet` followed by a dot and an identifier. The following identifiers have special meanings:
 
-| Identifier        | Behavior                                   |
-| ----------------- | ------------------------------------------ |
-| `snippet.hide`    | Hides the content following the directive. |
-| `snippet.end`     | Hides the content following the directive. |
-| `snippet.show`    | Shows the content following the directive. |
+| Identifier     | Behavior                                   |
+| -------------- | ------------------------------------------ |
+| `snippet.hide` | Hides the content following the directive. |
+| `snippet.end`  | Hides the content following the directive. |
+| `snippet.show` | Shows the content following the directive. |
 
 
 Below is an example of a Snippet that uses redactions to hide the `import` statements.
