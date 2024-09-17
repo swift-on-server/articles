@@ -36,6 +36,9 @@ let package = Package(
                 .product(name: "Mustache", package: "swift-mustache"),
             ],
             packageAccess: true
-        )
+        ),
+        .target(
+            name: "SnippetsExample"
+        ),
     ]
 )
