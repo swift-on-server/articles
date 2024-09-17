@@ -64,7 +64,7 @@ let package = Package(
         .macOS(.v14),
     ],
     dependencies: [
-        .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0-rc.1"),
+        .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0"),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.4.0"),
     ],
     targets: [
@@ -132,7 +132,7 @@ The route handlers in the `MyController` struct can access of the custom context
 2. Hummingbird is thread-safe, so every route handler should be marked  with `@Sendable` to propagate these thread-safety checks. 
 3. It is possible to access both the request and the context in each route handler. 
 
-As you can see there are quite a lot of changes in the latest version of the Hummingbird framework. The final release date is still unknown, but it is expected to happen within a few months, after the alpha & beta period ends. 
+Beyond these changes, there are many more in the new Hummingbird 2 release. We're excited for you to try it out!
 
 If have questions about Hummingbird, feel free to join the following [Discord server](https://discord.gg/fkN7FC7QJk). You can also get some inspiration from the official [Hummingbird examples](https://github.com/hummingbird-project/hummingbird-examples) repository. 
 
