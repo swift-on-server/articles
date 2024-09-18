@@ -34,7 +34,9 @@ WebSocket (WS) uses a plain-text TCP connection. A WebSocket connection is creat
 
 ## Building a real-time WebSocket chat
 
-<!-- TODO: link AsyncSequences article when it's ready -->
+Hummingbird's WebSockets leverage async sequences to achieve an efficient and robust method of processing messages.
+
+Read more about this here: <doc:advanced-async-sequences>
 
 The [Hummingbird Websocket](https://github.com/hummingbird-project/hummingbird-websocket) library is an extension for the Hummingbird web framework. This library provides WebSocket Client- and Serve support using the latest structured concurrency features like ``TaskGroup`` and ``AsyncSequence``s.
 

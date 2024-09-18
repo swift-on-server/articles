@@ -31,8 +31,6 @@ When adding the OpenAPI generator to your project, you'll need to add the follow
 
 **Note:** `swift-argument-parser` is not related to Hummingbird or OpenAPI.
 
-<!-- TODO: Update hummingbird dependency after release -->
-
 When working with OpenAPI generator, it's helpful to create a separate module (target) for your generated OpenAPI code. First of all, this allows you to import the generated code into a client implementation. But more importantly, it prevents the Swift compiler from getting confusing about the generated code "not existing" at times. When separating the OpenAPI module, it is compiled first, helping avoid these issues.
 
 In order to complete the setup, add the following to your Package manifest:
