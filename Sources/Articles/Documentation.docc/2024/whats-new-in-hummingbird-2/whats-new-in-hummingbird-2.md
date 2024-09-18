@@ -1,6 +1,6 @@
 # What's new in Hummingbird 2?
 
-Hummingbird is a lightweight, flexible HTTP server framework written in Swift. The work on the second major version started last year and the first alpha version was tagged on the 22th of January, 2024. There are quite a lot of significant changes and under the hood improvements. It seems like the new APIs are mostly settled down at this point, so this is a great opportunity to introduce HB2. Let's dive in.
+Hummingbird is a lightweight, flexible HTTP server framework written in Swift. The work on the second major version started halfway through 2023 and the first alpha version was tagged on the 22th of January, 2024. There are quite a lot of significant changes and under the hood improvements. With 2.0 being released, this is a great opportunity to read up on it!
 
 ## Swift concurrency
 
@@ -34,11 +34,9 @@ Hummingbird 2 takes advantage of the brand new [Swift HTTP Types library](https:
 
 Hummingbird 2 features a brand new routing library, based on Swift result builders. This is a standalone project, the old route building mechanism still works, but if you prefer result builders you can try the new method by importing this lib.
 
-Here's a little sneak-peak about the usage of the new ``RouterBuilder`` object:
+Here's a little peak into the usage of the new ``RouterBuilder`` object:
 
 @Snippet(path: "site/Snippets/hummingbird-2-routerbuilder")
-
-There are more examples available inside the Hummingbird [RouterTests](https://github.com/hummingbird-project/hummingbird/blob/2.x.x/Tests/HummingbirdRouterTests/RouterTests.swift) file. If you are curious about the new route builder tool, that's a good place to get started, since there are no official docs just yet.
 
 ## Generic request context
 
@@ -134,5 +132,5 @@ The route handlers in the `MyController` struct can access of the custom context
 
 Beyond these changes, there are many more in the new Hummingbird 2 release. We're excited for you to try it out!
 
-If have questions about Hummingbird, feel free to join the following [Discord server](https://discord.gg/fkN7FC7QJk). You can also get some inspiration from the official [Hummingbird examples](https://github.com/hummingbird-project/hummingbird-examples) repository. 
+If have questions about Hummingbird, feel free to join the following [Discord server](https://discord.gg/fkN7FC7QJk). You can also get some inspiration from the official [Hummingbird examples](https://hummingbird.codes/examples). 
 
