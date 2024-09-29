@@ -1,0 +1,75 @@
+# Using Hummingbird's Request Context
+
+[Hummingbird](https://hummingbird.codes) introduces a new feature that is essential in how it integrates with other libraries: the ``RequestContext``. 
+
+This is a protocol that defines a context that is created for each request that passes through your Hummingbird server. This context can be used to store and retrieve properties that are relevant to the request.
+
+This article explains what they're used for, and how they can help you build statically checked and performant applications.
+
+## The Core
+
+In the bottom-line, it's a struct that conforms to the ``RequestContext`` protocol. This protocol has one main requirement: It needs store a ``CoreRequestContextStorage``.
+
+The CoreRequestContextStorage is a container that the framework uses to store properties _it needs_. While the amount of properties are limited right now, this allows the framework to add more features in the future without breaking your code.
+
+In addition, a context can specify a ``RequestDecoder`` and ``ResponseEncoder``. These types can read the headers and body of a request, and encode a response body, respectively. This is usually backed by a codable implementation such as ``JSONEncoder``. Since Swift bundles a JSON implementation through Foundation, this is the default.
+
+While the en- and decoder usually focus on one content type such as JSON, it's also possible for a context to support multiple content types.
+
+Finally, a request specifies ``RequestContext/maxUploadSize``, which has a sensible default value. This specifies the maximum amount of data that Hummingbird may send to a ``RequestDecoder`` before rejecting the request.
+
+## Custom Contexts
+
+Hummingbird provides a very simlpe context called ``BasicRequestContext``, which is used by default. It's a good starting point for applications, but most applications need custom contexts.
+
+To create a custom context, create a struct that conforms to the ``RequestContext`` protocol. This struct stores any properties related to the request.
+
+@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: custom_request_context)
+
+The context is not to be used for dependency injection, such as a database connection. If a property is shared between requests, inject that type in the controller instead. <!-- TODO: Tutorial -->
+
+From here, instantiate a ``Router`` instance using the new context as a basis.
+
+@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: router)
+
+### Authentication
+
+When working with Hummingbird, contexts are a very essential part of any application. It's the glue between the framework, other libraries and routes.
+
+So far you've seen the context be used to relay information on a request level between the framework, middlewares and routes. However, some libraries need to know more contextual information. For example, a JWT library can provide knowledge on the user that is making the request.
+
+To do this, you can extend your context with a new property that stores the user information. This can be a simple struct that stores the user's ID, or a more complex type that stores the user's permissions.
+
+### Middleware
+
+<!-- TODO: Middleware tutorial -->
+
+Middleware are powerful tools that allow intercepting requests and responses, and modify them as needed. This is a great place to add authentication, logging, or other cross-cutting concerns.
+
+In Hummingbird, the middleware system is also designed with contexts in mind. When a request is received, the context is created and along between middleware. The middleware can then modify the context as needed.
+
+First, create a middleware type that conforms to the ``RouterMiddleware`` protocol. Then, inject properties into the context from the ``MiddlewareProtocol/handle(_:context:next:)`` method.
+
+While middleware can specify a `typealias` to constrain to a specific context, it's also possible make a middleware generic.
+
+@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: simple_middleware)
+
+### Context Protocols
+
+In the example above, the middleware specifies the type of Context it needs. However, using the power of Swift's generics, it's possible to make a middleware that works with different custom ``RequestContext``s.
+
+First, specify a protocol that the context must conform to. This protocol can be as simple as a marker protocol, or it can specify properties that the middleware needs.
+
+@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: context_protocol)
+
+Then, remove the `typealias` and replace it with a generic parameter. This parameter is constrained to the new protocol.
+
+@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: context_protocol_middleware)
+
+That's all you need to do! Now, the middleware can be used with any context that conforms to the protocol.
+
+## Conclusion
+
+Many of Hummingbird's features are built around the ``RequestContext``. It's a powerful tool that allows you to build statically checked and performant applications. By using the context, you can integrate with other libraries, add authentication, and more.
+
+For more information, check out the [Hummingbird documentation](https://docs.hummingbird.codes) and our other tutorials! Happy coding!
