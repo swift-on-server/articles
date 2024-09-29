@@ -75,9 +75,7 @@ You can read up on the result builder routers [here](https://docs.hummingbird.co
 
 Before adding routes, a Router is created:
 
-```swift
-let router = Router(context: AppRequestContext.self)
-```
+@Snippet(id: HummingbirdApp, slice: router)
 
 Notice that a "context" is provided here. An instance of this context is created for each request that passes through your Hummingbird server. The default one is ``BasicRequestContext``, but you can customise this to your needs. A context must be a concrete type, and can conform to many protocols. Through this system, you can integrate with various different libraries that need to inject or read properties.
 
@@ -85,13 +83,7 @@ Notice that a "context" is provided here. An instance of this context is created
 
 In the template, the first route has already been created. This is a `GET /health` route, as indicated in the function signature:
 
-<!-- TODO: Move to Snippets after review -->
-
-```swift
-router.get("/health") { _, _ -> HTTPResponse.Status in
-    return .ok
-}
-```
+@Snippet(id: HummingbirdApp, slice: health)
 
 This route is a simple health check that returns a 200 OK status code. You can test this route by navigating to `http://localhost:8080/health` in your browser. Although it returns a status code, the body is empty, meaning you'll see an empty page.
 
@@ -99,11 +91,7 @@ A route handler has two input parameters: a ``Request`` first, and the Context s
 
 Let's add a new GET route at the `/` path. This means that visiting your server at `http://localhost:8080` you'll see the response.
 
-```swift
-router.get("/") { _, _ -> String in
-    return "My app works!"
-}
-```
+@Snippet(id: HummingbirdApp. slice: basic_route)
 
 Rebuild and re-run your app, using Xcode, `swift run` or your other preferred method. Note that we've changed the return type to ``String`` to return a body.
 
@@ -117,17 +105,16 @@ While returning these simple types is a nice way to get started, you'll quickly 
 
 Create a type that conforms to ``ResponseCodable``, and return that from your route handler. This type will be encoded to the response body.
 
-```swift
-struct MyResponse: ResponseCodable {
-    let message: String
-}
+@Snippet(id: HummingbirdApp, slice: codable_route)
 
-router.get("/message") { _, _ -> MyResponse in
-    return MyResponse(message: "Hello, world!")
-}
+```swift
 ```
 
 This route will return a JSON response with the message "Hello, world!" encoded within!
+
+From here, just run the app!
+
+@Snippet(id: HummingbirdApp, slice: run)
 
 ## Conclusion
 
