@@ -107,9 +107,6 @@ Create a type that conforms to ``ResponseCodable``, and return that from your ro
 
 @Snippet(id: HummingbirdApp, slice: codable_route)
 
-```swift
-```
-
 This route will return a JSON response with the message "Hello, world!" encoded within!
 
 From here, just run the app!
