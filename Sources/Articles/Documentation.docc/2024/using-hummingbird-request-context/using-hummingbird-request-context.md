@@ -34,7 +34,7 @@ From here, instantiate a ``Router`` instance using the new context as a basis.
 
 ### Authentication
 
-When working with Hummingbird, your context is a very essential part of your application. It's the glue between the framework, your other libraries and routes.
+When working with Hummingbird, contexts are a very essential part of any application. It's the glue between the framework, other libraries and routes.
 
 So far you've seen the context be used to relay information on a request level between the framework, middlewares and routes. However, some libraries need to know more contextual information. For example, a JWT library can provide knowledge on the user that is making the request.
 
@@ -48,7 +48,7 @@ Middleware are powerful tools that allow intercepting requests and responses, an
 
 In Hummingbird, the middleware system is also designed with contexts in mind. When a request is received, the context is created and along between middleware. The middleware can then modify the context as needed.
 
-First, create a middleware type that conforms to the ``RouterMiddleware`` protocol. In the ``MiddlewareProtocol/handle(_:context:next:)`` method, you can then inject properties into the context.
+First, create a middleware type that conforms to the ``RouterMiddleware`` protocol. Then, inject properties into the context from the ``MiddlewareProtocol/handle(_:context:next:)`` method.
 
 While middleware can specify a `typealias` to constrain to a specific context, it's also possible make a middleware generic.
 
@@ -62,7 +62,7 @@ First, specify a protocol that the context must conform to. This protocol can be
 
 @Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: context_protocol)
 
-Then, remove the `typealias` and replace it with a generic parameter. This parameter is constrained to the protocol you just created.
+Then, remove the `typealias` and replace it with a generic parameter. This parameter is constrained to the new protocol.
 
 @Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: context_protocol_middleware)
 
