@@ -24,6 +24,7 @@ let package = Package(
             name: "Articles",
             dependencies: [
                 .product(name: "Hummingbird", package: "hummingbird"),
+                .product(name: "HummingbirdHTTP2", package: "hummingbird"),
                 .product(name: "HummingbirdRouter", package: "hummingbird"),
                 .product(name: "AsyncHTTPClient", package: "async-http-client"),
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
