@@ -1,6 +1,8 @@
 # Beginner's Guide to Protocol Buffers and gRPC with Swift
 
-This tutorial will explore Protocol Buffers and the gRPC communication service. For those unfamiliar with these technologies, this guide provides an excellent introduction to using them with Swift.
+gRPC is a popular open-source framework by Google that enables efficient communication between various systems and services. It leverages "protocol buffers", an efficient binary format, to write API specifications.
+
+If you're interested in building your own gRPC services, this tutorial explores Protocol Buffers and gRPC in Swift!
 
 ## What Are Protocol Buffers?
 
