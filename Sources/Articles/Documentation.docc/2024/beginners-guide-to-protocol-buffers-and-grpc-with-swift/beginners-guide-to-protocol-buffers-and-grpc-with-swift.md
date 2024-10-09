@@ -4,11 +4,20 @@ gRPC is a popular open-source framework by Google that enables efficient communi
 
 If you're interested in building your own gRPC services, this tutorial explores Protocol Buffers and gRPC in Swift!
 
-## What Are Protocol Buffers?
+## What are Protocol Buffers?
 
-Protocol Buffers [protobuf](https://protobuf.dev/) is a data serialization method developed by Google. It is particularly useful for enabling programs to communicate over a network or for efficiently storing structured data.
+[Protocol Buffers](https://protobuf.dev/), also called "protobuf", is an efficient data serialization method developed by Google. Using protobuf consists of three main components:
 
-Protocol Buffers are extensively used across various applications, such as network communication, data storage, and configuration management. They offer a language-neutral, platform-neutral, and extensible approach to serializing structured data.
+- The Protobuf language
+- The Swift-Protobuf Compiler
+- Swift-Protobuf Library
+
+1. The [protobuf language](https://protobuf.dev/programming-guides/proto3/) is used to define your protocol's data structures.
+2. These types are then defined in a `.proto` file, which is fed into the protobuf compiler.
+3. The output of the Swift compiler consists of one or more Swift files that handle (de)-serialization to- and from protobuf.
+4. The protobuf-swift libraries contains the utilities needed by the produces source files.
+
+Because protobuf compilers and libraries exist for many ecosystems, `proto` files are portable to other projects that need to interface together in various different languages.
 
 ## What is gRPC?
 
