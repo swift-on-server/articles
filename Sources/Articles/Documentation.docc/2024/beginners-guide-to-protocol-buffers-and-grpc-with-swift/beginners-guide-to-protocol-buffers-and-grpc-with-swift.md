@@ -203,17 +203,19 @@ A similar configuration is required for the gRPC Swift plugin. Add the `todo.pro
 }
 ```
 
-In this case, we'd like to generate server-side Swift code.
+By using the Swift gRPC plugin, server-side Swift code is generated, and it utilizes the data types produced by the Swift Protobuf plugin.
 
-TODO: enable plugin when using from Xcode...
+It's important to note that the Swift Protobuf plugin generates only the data structures. In contrast, the Swift gRPC plugin can generate both the server and client-side interfaces for the whole communication layer. Simply put, Protocol Buffers manage the data encoding and decoding, while gRPC uses Protocol Buffers to enable RPC communication.
 
-https://forums.swift.org/t/plugin-doesnt-have-access-to-binary-package-manager-extensible-build-tools-se-0303-and-se-0305/56038/10
-
+One caveat when using Xcode is that the plugins might need to be manually enabled. This can be done in the Report Navigator by clicking the links below the log messages. Another [issue](https://forums.swift.org/t/plugin-doesnt-have-access-to-binary-package-manager-extensible-build-tools-se-0303-and-se-0305/56038/10) is that Xcode may not access external build tools, so linking the protoc command manually may be required using the following command:
 
 ```sh
+ln -snfv /opt/homebrew/bin/protoc /Applications/Xcode.app/Contents/Developer/usr/bin/protoc
+# alternatively, if you're using a beta version
 ln -snfv /opt/homebrew/bin/protoc /Applications/Xcode-beta.app/Contents/Developer/usr/bin/protoc
 ```
 
+After a successful build, the generated data types and interfaces will be available, allowing the implementation of the server-side interface using the gRPC library. Below is an example of a simple actor-based implementation that uses in-memory storage and meets the `TodoService` protocol requirements:
 
 ```swift
 import GRPC
@@ -275,6 +277,13 @@ actor TodoService: Todos_TodoServiceAsyncProvider {
 }
 ```
 
+The snippet above utilizes several types from the gRPC library, such as `GRPCStatus`, and `GRPCAsyncServerCallContext`, which is passed as an argument to each call. Additionally, the functions use the Swift data types generated from the `todo_messages.proto` definition, allowing you to provide the required input and output data.
+
+The final step is to configure the gRPC server. This can be done by using a an `Entrypoint` struct as a main entry point. We'll utilize the Swift Argument Parser library to allow users to specify both the hostname and port when launching the application. 
+
+This setup is based on the v1 gRPC library, which operates with `EventLoopFutures`. However, v2 is already in development and is built on modern Swift concurrency features, utilizing the Service Lifecycle library. As a result, this process will become much simpler once v2 is released.
+
+Below is an example of how to configure the server using the current gRPC release (v1):
 
 ```swift
 import ArgumentParser
@@ -299,53 +308,53 @@ struct Entrypoint: ParsableCommand {
         
         let group: EventLoopGroup = .singletonMultiThreadedEventLoopGroup
 
+        // 1. 
         let server = Server.insecure(group: group)
             .withServiceProviders(
                 [
+                    // 2.
                     TodoService(),
                 ]
             )
+            // 3.
             .bind(to: .host(hostname, port: port))
         
+        // 4.
         server.map {
             $0.channel.localAddress
         }.whenSuccess { address in
             logger.debug("gRPC Server started on port \(address!.port!)")
         }
         
+        // 5.
         _ = try server.flatMap { $0.onClose }.wait()
     }
 }
 ```
 
+1.	The `Server.insecure(group:)` creates a gRPC server using the specified `EventLoopGroup` for handling requests.
+2.	The `withServiceProviders` method registers the `TodoService` instance, which contains the service logic for handling gRPC requests.
+3.	The `.bind(to:)` method binds the server to the specified hostname and port, making it ready to accept incoming requests.
+4.	The `server.map` retrieves the local address of the server and logs a message indicating that the gRPC server has successfully started on the specified port.
+5.	The application waits for the server to close before shutting down, keeping the server running to handle requests.
+
+To test the gRPC server, the [Evans gRPC client](https://github.com/ktr0731/evans) is a great option. Evans is a user-friendly, interactive gRPC client that allows developers to communicate with gRPC servers without needing to write any additional code. It provides a REPL-like interface for interacting with the server’s methods.
+
+Evans is available via the Homebrew package manager, making installation straightforward. Simply run the following command:
 
 ```sh
 brew tap ktr0731/evans && brew install evans
+```
+
+Once installed, you can connect to your gRPC server by specifying the host and port:
+
+```sh
 evans repl --host localhost --port 1234 --proto ./todo.proto
 ```
 
+This will launch Evans in interactive mode, allowing you to call the available RPC methods defined in your .proto files. Evans simplifies testing gRPC servers, making it a valuable tool during development and debugging.
 
+## Summary
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+That’s all it takes to set up a basic gRPC server using Swift and Protocol Buffers. Many advanced features are available, such as streaming, bidirectional data flow, and generating client-side code. I hope this tutorial has provided a solid foundation for getting started with gRPC servers in Swift using the Swift Protobuf and gRPC libraries.
 
