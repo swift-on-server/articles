@@ -2,7 +2,7 @@
 
 gRPC is a popular open-source framework by Google that enables efficient communication between various systems and services. It leverages "protocol buffers", an efficient binary format, to write API specifications.
 
-If you're interested in building your own gRPC services, this tutorial explores Protocol Buffers and gRPC in Swift!
+If you're interested in building your own gRPC services, this tutorial explores Protocol Buffers and gRPC in Swift.
 
 ## What are Protocol Buffers?
 
@@ -19,8 +19,18 @@ If you're interested in building your own gRPC services, this tutorial explores 
 
 Because protobuf compilers and libraries exist for many ecosystems, `proto` files are portable to other projects that need to interface together in various different languages.
 
+### The Protobuf language
 
-## The Protocol Buffer Compiler
+Protobuf defines structured data using `.proto` schema files, where message types are declared with fields that have unique tags for identification. 
+
+Each field has a type, such as integers, strings, or nested messages, and can be marked as optional or repeated. When compiled, these definitions generate code in various languages, allowing efficient serialization and deserialization of data. 
+
+The language is designed to be compact, fast, and backward-compatible, making it ideal for communication between services or for long-term data storage.
+
+A [VSCode plugin](https://marketplace.visualstudio.com/items?itemName=zxh404.vscode-proto3) is available that provides syntax highlighting and validation features, making it easier to work with `.proto` files.
+
+
+### The Protocol Buffer Compiler
 
 The protocol buffer compiler (protoc) is a tool that generates source code for data serialization and gRPC communication from `.proto` schema files.
 
@@ -84,7 +94,7 @@ It is possible to generate a Swift data structure from the proto file using the 
 protoc --swift_out=./ --grpc-swift_out=./ todo_messages.proto
 ```
 
-This command will create a todo_messages.pb.swift file, which contains the structs representing the protocol buffer description. 
+This command will create a `todo_messages.pb.swift` file, which contains the structs representing the protocol buffer description. 
 
 With the data model in place, the next step is to build a simple gRPC interface that will serve as the foundation for a future gRPC server.
 
@@ -364,7 +374,7 @@ Once installed, you can connect to your gRPC server by specifying the host and p
 evans repl --host localhost --port 1234 --proto ./todo.proto
 ```
 
-This will launch Evans in interactive mode, allowing you to call the available RPC methods defined in your .proto files. Evans simplifies testing gRPC servers, making it a valuable tool during development and debugging.
+This will launch Evans in interactive mode, allowing you to call the available RPC methods defined in your `.proto` files. Evans simplifies testing gRPC servers, making it a valuable tool during development and debugging.
 
 ## Summary
 
