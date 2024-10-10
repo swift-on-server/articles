@@ -19,14 +19,6 @@ If you're interested in building your own gRPC services, this tutorial explores 
 
 Because protobuf compilers and libraries exist for many ecosystems, `proto` files are portable to other projects that need to interface together in various different languages.
 
-## What is gRPC?
-
-[gRPC](https://grpc.io/) (gRPC Remote Procedure Call) is an open-source framework developed by Google. It enables efficient communication between distributed systems and services, allowing them to collaborate seamlessly.
-
-It is quite similar to the OpenAPI standard, but Protocol Buffers are more efficient, as they use a binary format instead of JSON. 
-
-When using the OpenAPI format, schemas are defined using a JSON or YAML file. In contrast, Protocol Buffers define the schema of data structures using a `.proto` file, which specifies the structure and data types to be serialized.
-
 
 ## The Protocol Buffer Compiler
 
@@ -61,20 +53,20 @@ package todos;
 message Empty {}
 
 // 3.
-message TodoList {
-    repeated Todo todos = 1;
-}
-
-// 4.
 message TodoID {
     string todoID = 1;
 }
 
-// 5.
+// 4.
 message Todo {
     optional string todoID = 1;
     string title = 2;
     bool completed = 3;
+}
+
+// 5.
+message TodoList {
+    repeated Todo todos = 1;
 }
 ```
 
@@ -94,8 +86,17 @@ protoc --swift_out=./ --grpc-swift_out=./ todo_messages.proto
 
 This command will create a todo_messages.pb.swift file, which contains the structs representing the protocol buffer description. 
 
-With the data model in place, the next step is to build a simple gRPC interface that will serve as the foundation for a future gRPC server. Below is the protobuf definition for the sample todo service:
+With the data model in place, the next step is to build a simple gRPC interface that will serve as the foundation for a future gRPC server.
 
+## What is gRPC?
+
+[gRPC](https://grpc.io/) (gRPC Remote Procedure Call) is an open-source framework developed by Google. It enables efficient communication between distributed systems and services, allowing them to collaborate seamlessly.
+
+It is quite similar to the OpenAPI standard, but Protocol Buffers are more efficient, as they use a binary format instead of JSON. 
+
+When using the OpenAPI format, schemas are defined using a JSON or YAML file. In contrast, Protocol Buffers define the schema of data structures using a `.proto` file, which specifies the structure and data types to be serialized.
+
+Below is the protobuf definition for the sample todo service:
 
 ```protobuf
 // todo.proto
