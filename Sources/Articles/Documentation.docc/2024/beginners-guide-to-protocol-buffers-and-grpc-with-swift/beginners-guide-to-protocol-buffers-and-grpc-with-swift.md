@@ -78,11 +78,11 @@ message Todo {
 }
 ```
 
-1. The package `todos` defines the namespace for this protobuf file.
-2. The `Empty` message is an empty structure, often used for simple requests or responses without data.
-3. The `TodoList` message contains a list of `Todo` items, marked as a repeated field.
-4. The `TodoID` message holds a single string field to represent the ID of a specific Todo item.
-5. The `Todo` message defines a task with an optional `todoID`, a `title`, and a `completed` status represented by a boolean.
+1. Define a `todos` namespace for this protobuf file.
+2. Create the `Empty` message with an empty structure - which contains no data.
+3. The `TodoID` message holds a single string field to represent the ID of a specific "Todo" item.
+4. A `Todo` message defines a task with an optional `todoID`, a `title`, and a `completed` status represented by a boolean.
+5. Finally, the `TodoList` message contains a list of `Todo` items, through a repeated field.
 
 
 It is possible to generate a Swift data structure from the proto file using the protoc command. Run the following command in the same directory as your proto file to generate the Swift source code:
