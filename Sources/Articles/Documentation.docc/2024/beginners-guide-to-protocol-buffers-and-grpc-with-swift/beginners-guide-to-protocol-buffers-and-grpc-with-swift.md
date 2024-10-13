@@ -102,7 +102,10 @@ With the data model in place, the next step is to build a simple gRPC interface 
 
 [gRPC](https://grpc.io/) (gRPC Remote Procedure Call) is an open-source framework developed by Google. It enables efficient communication between distributed systems and services, allowing them to collaborate seamlessly.
 
-It is quite similar to the OpenAPI standard, but Protocol Buffers are more efficient, as they use a binary format instead of JSON. 
+It's used similarly to the OpenAPI standard, but has two key differences:
+
+- gRPC uses protobuf, which is more compact and performant than JSON or Multipart.
+- gRPC supports bi-directional streaming as opposed to OpenAPI's request/response model.
 
 When using the OpenAPI format, schemas are defined using a JSON or YAML file. In contrast, Protocol Buffers define the schema of data structures using a `.proto` file, which specifies the structure and data types to be serialized.
 
