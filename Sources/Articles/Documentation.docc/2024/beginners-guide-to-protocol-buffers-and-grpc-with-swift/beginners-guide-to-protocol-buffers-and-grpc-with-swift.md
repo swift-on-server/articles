@@ -145,7 +145,7 @@ protoc --swift_out=./ --grpc-swift_out=./ todo.proto
 
 This will generate the `todo.grpc.swift` file, which contains the protocols that must be implemented when building the gRPC server. It's also worth mentioning that the `protoc` command generates both client and server-side protocols by default.
 
-The process that we just described is an ahead-of-time (manual) code generation, quite similar what we have for the [Swift OpenAPI generator](https://github.com/apple/swift-openapi-generator/blob/main/Examples/README.md#ahead-of-time-manual-code-generation) tool. 
+The above process uses ahead-of-time (manual) code generation, quite similar what we have for the [Swift OpenAPI generator](https://github.com/apple/swift-openapi-generator/blob/main/Examples/README.md#ahead-of-time-manual-code-generation) tool. 
 
 The generated files depend on two Swift libraries, but these packages also include Swift Package Plugins. By leveraging these plugins, the entire generation process can be integrated into the build pipeline.
 
