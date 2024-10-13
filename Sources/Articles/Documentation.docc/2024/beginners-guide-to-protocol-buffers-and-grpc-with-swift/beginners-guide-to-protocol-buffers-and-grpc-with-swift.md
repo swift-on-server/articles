@@ -108,7 +108,7 @@ It's used similarly to the OpenAPI standard, but has two key differences:
 - gRPC supports bi-directional streaming as opposed to OpenAPI's request/response model.
 
 
-Below is the protobuf definition for the sample todo service:
+Below is the protobuf definition for the todo gRPC service:
 
 ```protobuf
 // todo.proto
