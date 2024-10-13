@@ -107,7 +107,6 @@ It's used similarly to the OpenAPI standard, but has two key differences:
 - gRPC uses protobuf, which is more compact and performant than JSON or Multipart.
 - gRPC supports bi-directional streaming as opposed to OpenAPI's request/response model.
 
-When using the OpenAPI format, schemas are defined using a JSON or YAML file. In contrast, Protocol Buffers define the schema of data structures using a `.proto` file, which specifies the structure and data types to be serialized.
 
 Below is the protobuf definition for the sample todo service:
 
