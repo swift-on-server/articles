@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+// 1.
+package todos;
+
+// 2.
+message Empty {}
+
+// 3.
+message TodoID {
+    string todoID = 1;
+}
+
+// 4.
+message Todo {
+    optional string todoID = 1;
+    string title = 2;
+    bool completed = 3;
+}
+
+// 5.
+message TodoList {
+    repeated Todo todos = 1;
+}
