@@ -1,31 +1,17 @@
 // snippet.imports
 import NIOCore
 import NIOHTTP1
+import HTTPTypes
+import NIOHTTPTypes
+import NIOHTTPTypesHTTP1
 import NIOPosix
 
-// snippet.end
-
-// snippet.bootstrap
-// 1
-let httpClientBootstrap = ClientBootstrap(
-    group: NIOSingletons.posixEventLoopGroup
-)
-// 2
-.channelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
-// 3
-.channelInitializer { channel in
-    // 4
-    channel.pipeline.addHTTPClientHandlers(
-        position: .first,
-        leftOverBytesStrategy: .fireError
-    )
-}
 // snippet.end
 
 // snippet.partial
 enum HTTPPartialResponse {
     case none
-    case receiving(HTTPResponseHead, ByteBuffer)
+    case receiving(HTTPResponse, ByteBuffer)
 }
 // snippet.end
 
@@ -38,12 +24,35 @@ enum HTTPClientError: Error {
 // snippet.client
 struct HTTPClient {
     let host: String
+    let httpClientBootstrap: ClientBootstrap
+
+    init(host: String) {
+        // snippet.bootstrap
+        // 1
+        let httpClientBootstrap = ClientBootstrap(
+            group: NIOSingletons.posixEventLoopGroup
+        )
+        // 2
+        .channelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
+        // 3
+        .channelInitializer { channel in
+            // 4
+            channel.eventLoop.makeCompletedFuture {
+                try channel.pipeline.syncOperations.addHTTPClientHandlers()
+                try channel.pipeline.syncOperations.addHandler(HTTP1ToHTTPClientCodec())
+            }
+        }
+        // snippet.end
+
+        self.host = host
+        self.httpClientBootstrap = httpClientBootstrap
+    }
 
     func request(
-        _ uri: String,
-        method: HTTPMethod = .GET,
-        headers: HTTPHeaders = [:]
-    ) async throws -> (HTTPResponseHead, ByteBuffer) {
+        _ path: String,
+        method: HTTPRequest.Method = .get,
+        headers: HTTPFields = [:]
+    ) async throws -> (HTTPResponse, ByteBuffer) {
         // 1
         let clientChannel =
             try await httpClientBootstrap.connect(
@@ -55,8 +64,8 @@ struct HTTPClient {
                 try NIOAsyncChannel(
                     wrappingChannelSynchronously: channel,
                     configuration: NIOAsyncChannel.Configuration(
-                        inboundType: HTTPClientResponsePart.self,  // 3
-                        outboundType: HTTPClientRequestPart.self  // 4
+                        inboundType: HTTPResponsePart.self,  // 3
+                        outboundType: HTTPRequestPart.self  // 4
                     )
                 )
             }
@@ -69,11 +78,12 @@ struct HTTPClient {
             // 2
             try await outbound.write(
                 .head(
-                    HTTPRequestHead(
-                        version: .http1_1,
+                    HTTPRequest(
                         method: method,
-                        uri: uri,
-                        headers: headers
+                        scheme: "http",
+                        authority: host,
+                        path: path,
+                        headerFields: headers
                     )
                 )
             )
@@ -126,10 +136,9 @@ struct HTTPClient {
 
 // snippet.usage
 let client = HTTPClient(host: "example.com")
-let (response, body) = try await client.request(
-    "/",
-    headers: ["Host": "example.com"]
-)
+let (response, body) = try await client.request("/")
 print(response)
 print(body.getString(at: 0, length: body.readableBytes)!)
 // snippet.end
+
+extension HTTPPart: @unchecked Sendable {}
