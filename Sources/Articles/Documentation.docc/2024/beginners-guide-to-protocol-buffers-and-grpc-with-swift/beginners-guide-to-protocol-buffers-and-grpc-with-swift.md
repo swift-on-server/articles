@@ -63,33 +63,7 @@ cp "$(swift build --show-bin-path -c release)/protoc-gen-grpc-swift" /Users/{me}
 
 The next step involves defining the data structure for a sample todo application by creating a `todo_messages.proto` file. This file will specify the models for the application. Below is the complete protobuf definition:
 
-```protobuf
-// todo_messages.proto
-syntax = "proto3";
-
-// 1.
-package todos;
-
-// 2.
-message Empty {}
-
-// 3.
-message TodoID {
-    string todoID = 1;
-}
-
-// 4.
-message Todo {
-    optional string todoID = 1;
-    string title = 2;
-    bool completed = 3;
-}
-
-// 5.
-message TodoList {
-    repeated Todo todos = 1;
-}
-```
+@Snippet(path: "site/Snippets/beginners-guide-to-protocol-buffers-and-grpc-with-swift/todo_messages.proto")
 
 1. Define a `todos` namespace for this protobuf file.
 2. Create the `Empty` message with an empty structure - which contains no data.
@@ -128,27 +102,7 @@ It's used similarly to the OpenAPI standard, but has two key differences:
 
 Below is the protobuf definition for the todo gRPC service:
 
-```protobuf
-// todo_service.proto
-syntax = "proto3";
-
-package todos;
-
-// 1.
-import "todo_messages.proto";
-
-// 2. 
-service TodoService {
-  // 3. 
-  rpc FetchTodos (Empty) returns (TodoList) {}
-  // 4. 
-  rpc CreateTodo (Todo) returns (Todo) {}
-  // 5. 
-  rpc DeleteTodo (TodoID) returns (Empty) {}
-  // 6. 
-  rpc CompleteTodo (TodoID) returns (Todo) {}
-}
-```
+@Snippet(path: "site/Snippets/beginners-guide-to-protocol-buffers-and-grpc-with-swift/todo_service.proto")
 
 1. The `todo_messages.proto` file is imported to reuse its message definitions.
 2. The `TodoService` defines the service responsible for managing todo operations.
@@ -214,77 +168,7 @@ It's also a good practice to retain the original `.proto` files for reference an
 
 With the generated data types and interfaces in place, the server-side interface can now be implemented using the gRPC library. Below is an example of a simple actor-based implementation that utilizes in-memory storage and fulfills the `TodoService` protocol requirements:
 
-```swift
-import GRPCNIOTransportHTTP2
-import GRPCProtobuf
-
-actor TodoService: Todos_TodoService_ServiceProtocol {
-
-    var todos: [Todos_Todo]
-    
-    init(
-        todos: [Todos_Todo] = []
-    ) {
-        self.todos = todos
-    }
-
-    func createTodo(
-        request: ServerRequest<Todos_Todo>,
-        context: ServerContext
-    ) async throws -> ServerResponse<Todos_Todo> {
-        todos.append(request.message)
-        return .init(message: request.message)
-    }
-    
-    func fetchTodos(
-        request: ServerRequest<Todos_Empty>,
-        context: ServerContext
-    ) async throws -> ServerResponse<Todos_TodoList> {
-        var result = Todos_TodoList()
-        result.todos = todos
-        return .init(message: result)
-    }
-    
-    func completeTodo(
-        request: ServerRequest<Todos_TodoID>,
-        context: ServerContext
-    ) async throws -> ServerResponse<Todos_Todo> {
-        guard
-            var todo = todos.first(where: { $0.todoID == request.message.todoID })
-        else {
-            return .init(
-                error: RPCError.init(
-                    code: .notFound,
-                    message: "Todo not found."
-                )
-            )
-        }
-        todo.completed = true
-        todos = todos.filter { $0.todoID != request.message.todoID }
-        todos.append(todo)
-        return .init(message: todo)
-
-    }
-    
-    func deleteTodo(
-        request: ServerRequest<Todos_TodoID>,
-        context: ServerContext
-    ) async throws -> ServerResponse<Todos_Empty> {
-        guard
-            let todo = todos.first(where: { $0.todoID == request.message.todoID })
-        else {
-            return .init(
-                error: RPCError.init(
-                    code: .notFound,
-                    message: "Todo not found."
-                )
-            )
-        }
-        todos = todos.filter { $0.todoID != todo.todoID }
-        return .init(message: .init())
-    }
-}
-```
+@Snippet(path: "site/Snippets/beginners-guide-to-protocol-buffers-and-grpc-with-swift/TodoService.swift")
 
 The snippet above relies on several types from the gRPC library, such as `ServerRequest` and `ServerContext`, which are passed as arguments to each function call. The functions also use Swift data types generated from the `todo_messages.proto` file, ensuring that the required input and output data is provided correctly.
 
@@ -292,44 +176,7 @@ The final step involves configuring the gRPC server. This can be achieved by cre
 
 This setup is built on the v2 gRPC library, which introduces support for modern concurrency features, including task groups and the Service Lifecycle library. Below is an example demonstrating how to configure the server using the upcoming gRPC v2 release:
 
-```swift
-import ArgumentParser
-import GRPCNIOTransportHTTP2
-import GRPCProtobuf
-
-@main
-struct Entrypoint: AsyncParsableCommand {
-    
-    @Option(name: .shortAndLong)
-    var hostname: String = "127.0.0.1"
-    
-    @Option(name: .shortAndLong)
-    var port: Int = 1234
-    
-    func run() async throws {
-        // 1.
-        let server = GRPCServer(
-            transport: .http2NIOPosix(
-                address: .ipv4(host: hostname, port: port),
-                config: .defaults(transportSecurity: .plaintext)
-            ),
-            services: [
-                // 2.
-                TodoService()
-            ]
-        )
-
-        // 3.
-        try await withThrowingDiscardingTaskGroup { group in
-            group.addTask { try await server.serve() }
-            // 4.
-            if let address = try await server.listeningAddress {
-                print("gRPC server listening on \(address)")
-            }
-        }
-    }
-}
-```
+@Snippet(path: "site/Snippets/beginners-guide-to-protocol-buffers-and-grpc-with-swift/Entrypoint.swift")
 
 1.	Creates a gRPC server using the specified `http2NIOPosix` transport layer with the provided configuration. 
 2.	Add the `TodoService` as a service, which contains the logic for handling gRPC requests.
