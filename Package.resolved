@@ -1,5 +1,5 @@
 {
-  "originHash" : "02c7fd91602b008842b62853dc346140428c80eb808b9ede3c74ebe486cbfe88",
+  "originHash" : "f6c66464b7de44086527b7c7cc0d835ea39ea97cad7b0a31a2ce3c82650872f4",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -11,12 +11,30 @@
       }
     },
     {
+      "identity" : "bson",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/orlandos-nl/BSON.git",
+      "state" : {
+        "revision" : "d918a5c24d875deeb6bcc9082a68bd097ac24d92",
+        "version" : "8.1.2"
+      }
+    },
+    {
       "identity" : "compress-nio",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/adam-fowler/compress-nio.git",
       "state" : {
         "revision" : "a52d3ac5f48820846d34d78d6f59316481e84968",
         "version" : "1.2.1"
+      }
+    },
+    {
+      "identity" : "dnsclient",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/orlandos-nl/DNSClient.git",
+      "state" : {
+        "revision" : "9b3369164d89d37feb11bfa6405502367480fee1",
+        "version" : "2.4.3"
       }
     },
     {
@@ -62,6 +80,15 @@
       "state" : {
         "revision" : "f53e2afe403b225a674fb5d1f0c5830d3991e9dc",
         "version" : "2.0.0"
+      }
+    },
+    {
+      "identity" : "mongokitten",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/orlandos-nl/MongoKitten.git",
+      "state" : {
+        "revision" : "6654e801833d5dab3c04af065646ba727f9542e9",
+        "version" : "7.9.7"
       }
     },
     {
