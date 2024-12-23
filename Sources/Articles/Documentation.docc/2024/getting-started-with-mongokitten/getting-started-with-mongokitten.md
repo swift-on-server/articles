@@ -40,13 +40,13 @@ let package = Package(
 
 Let's create our first connection:
 
-@Snippet(path: "site/Snippets/mongokitten-basics.swift", slice: "connection")
+@Snippet(path: "site/Snippets/mongokitten-basics", slice: "connection")
 
 ### Defining Our Models
 
 For our social network, we'll create a Post model using the ``Codable`` protocol:
 
-@Snippet(path: "site/Snippets/mongokitten-models.swift", slice: "models")
+@Snippet(path: "site/Snippets/mongokitten-models", slice: "models")
 
 The ``ObjectId`` type is MongoDB's native unique identifier, similar to a ``UUID``. Every document in MongoDB has an `_id` field, which must be unique within a collection. 
 
@@ -54,7 +54,7 @@ The ``ObjectId`` type is MongoDB's native unique identifier, similar to a ``UUID
 
 Let's create a function to save posts:
 
-@Snippet(path: "site/Snippets/mongokitten-basics.swift", slice: "insert")
+@Snippet(path: "site/Snippets/mongokitten-basics", slice: "insert")
 
 1. Create the post as a regular Swift struct
 2. Access the posts ``MongoCollection``, this is similar to a table in a relational database
@@ -66,7 +66,7 @@ In BSON, all entities are stored as '**documents**'.
 
 To read posts, we can use MongoKitten's query API:
 
-@Snippet(path: "site/Snippets/mongokitten-basics.swift", slice: "find-all")
+@Snippet(path: "site/Snippets/mongokitten-basics", slice: "find-all")
 
 All the methods are chainable, and modify the query. MongoKitten will only execute the query when you call ``MongoCursor.drain``, or iterate over the results of any query.
 
@@ -80,13 +80,13 @@ The drain function will execute the query and return the results as an array of 
 
 MongoKitten supports filtering and sorting on most queries.
 
-@Snippet(path: "site/Snippets/mongokitten-basics.swift", slice: "find-by-author")
+@Snippet(path: "site/Snippets/mongokitten-basics", slice: "find-by-author")
 
 The ``MongoCollection.find(_:) [7HX5V]`` method returns a ``FindQueryBuilder``, a type of ``MongoCursor`` that allows you to chain more methods.
 
 ### Sorting and Limiting
 
-@Snippet(path: "site/Snippets/mongokitten-basics.swift", slice: "find-recent")
+@Snippet(path: "site/Snippets/mongokitten-basics", slice: "find-recent")
 
 The **find** method accepts one argument, a filter. By providing the find filter, MongoDB will only return documents that match the filter.
 
@@ -99,7 +99,7 @@ Then, chain the following methods:
 
 MongoDB, and by extension MongoKitten, uses ``BSON`` (Binary JSON) as its native data format. While MongoKitten handles most BSON conversions automatically through Codable, you can also work with BSON directly:
 
-@Snippet(path: "site/Snippets/mongokitten-basics.swift", slice: "bson")
+@Snippet(path: "site/Snippets/mongokitten-basics", slice: "bson")
 
 ## Next Steps
 
