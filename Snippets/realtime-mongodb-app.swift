@@ -86,7 +86,6 @@ struct RealtimeMongoApp {
 actor ConnectionManager {
     private let database: MongoDatabase
     private var outboundConnections: [UUID: WebSocketOutboundWriter] = [:]
-    private let jsonEncoder = JSONEncoder()
     
     init(database: MongoDatabase) {
         self.database = database
@@ -106,19 +105,10 @@ actor ConnectionManager {
         _ client: WebSocketOutboundWriter,
         perform: () async throws -> T
     ) async throws -> T {
-        let id = addClient(client)
-        defer { removeClient(id: id) }
-        return try await perform()
-    }
-    
-    private func addClient(_ ws: WebSocketOutboundWriter) -> UUID {
         let id = UUID()
-        outboundConnections[id] = ws
-        return id
-    }
-    
-    private func removeClient(id: UUID) {
-        outboundConnections[id] = nil
+        outboundConnections[id] = client
+        defer { outboundConnections[id] = nil }
+        return try await perform()
     }
 }
 // snippet.end
@@ -137,7 +127,7 @@ extension ConnectionManager: Service {
             // 4.
             if change.operationType == .insert, let post = change.fullDocument {
                 // 5.
-                let jsonData = try jsonEncoder.encode(post)
+                let jsonData = try JSONEncoder().encode(post)
                 // 6.
                 await broadcast(jsonData)
             }
