@@ -14,7 +14,7 @@ In this tutorial, you'll learn how to:
 ### Prerequisites
 
 This tutorial builds upon concepts from:
-- <doc:mongokitten-basics>
+- <doc:getting-started-with-mongokitten>
 - <doc:websockets-tutorial-using-swift-and-hummingbird>
 
 Make sure you have MongoDB running locally before starting.
