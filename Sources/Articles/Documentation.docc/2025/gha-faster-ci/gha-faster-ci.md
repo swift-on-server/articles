@@ -1,11 +1,12 @@
 # Faster CI in GitHub Actions
 
-One of the biggest weak points of Swift is how slow the build system is.
-You'll pay less for CI, or run out of less of your GitHub Actions free quota.
+One of the biggest weak points of Swift is how slow the build system is. It can easily take anything between 10 to 40 minutes for a typical Swift CI to run, depending on how big the project is, what build configuration you're using, and other factors.
+By optimizing your CI runtime, you'll not only save precious developer time, but you'll also either pay less for CI, or consume less of your GitHub Actions free quota.
+In this article, we'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 15 minutes in deployments, down to 4 and 8 minutes. The bigger your project is, the bigger the gap will be.
 
 ## The Problem
 
-A usual CI file to test a Swift project can look like this.
+A usual CI file to test a Swift project can look like this:
 
 ```yaml
 name: tests
@@ -15,7 +16,8 @@ on:
 
 jobs:
   unit-tests:
-    runs-on: swift:6.0-noble
+    runs-on: ubuntu-latest
+    container: swift:6.0-noble
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -46,6 +48,9 @@ jobs:
       # Push the image to a Docker container registry
 ```
 
+As mentioned before, these CIs usually take around 10 minutes in tests and 15 minutes for deployments in [Penny](https://github.com/vapor/penny-bot).
+How can we improve them?
+
 ## Use Swift and Ubuntu Jammy
 
 In CI file:
@@ -53,7 +58,9 @@ In CI file:
 ```yaml
 jobs:
   unit-tests:
-    runs-on: swift:6.0-jammy
+    runs-on: ubuntu-latest
+-    container: swift:6.0-noble
++    container: swift:6.0-jammy
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -66,32 +73,36 @@ jobs:
 
 In Dockerfile:
 
-`FROM swift:6.0-jammy`
-`FROM ubuntu:jammy`
+```diff
+-FROM swift:6.0-noble
++FROM swift:6.0-jammy
+
+...
+
+-FROM ubuntu:noble
++FROM ubuntu:jammy
+```
 
 ## Speed Up Your CI Using actions/cache
 
-```yaml
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Restore .build
-        id: "restore-cache"
-        uses: actions/cache/restore@v4
-        with:
-          path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
-          restore-keys: "swiftpm-build-${{ runner.os }}-"
+```diff
++      - name: Restore .build
++        id: "restore-build"
++        uses: actions/cache/restore@v4
++        with:
++          path: .build
++          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
++          restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
 
       - name: Run unit tests
         run: swift test --enable-code-coverage
 
-      - name: Cache .build
-        if: steps.restore-build.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
++      - name: Cache .build
++        if: steps.restore-build.outputs.cache-hit != 'true'
++        uses: actions/cache/save@v4
++        with:
++          path: .build
++          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
 ```
 
 ## Speed Up Cache Steps Using zstd
@@ -103,86 +114,80 @@ As it turns out, `actions/cache` compresses the directories before the upload. T
 The hope is not lost though. The good news is that `actions/cache` will detect if it can use `zstd` instead of `gzip` for compression. If `zstd` is available, it'll use that instead.
 For our purposes, `zstd` is much more performant than `gzip`, or even than `gzip`'s parallel implementation known as `pigz`, so we should use that instead.
 
-Simple install `zstd` on the machine before any calls to `actions/cache`:
+Simply install `zstd` on the machine before any calls to `actions/cache`:
 
-```yaml
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Install zstd
-        run: |
-          apt-get update -y
-          apt-get install -y zstd
+```diff
++      - name: Install zstd
++        run: |
++          apt-get update -y
++          apt-get install -y zstd
 
       - name: Restore .build
-        id: "restore-cache"
+        id: "restore-build"
         uses: actions/cache/restore@v4
         with:
           path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
-          restore-keys: "swiftpm-build-${{ runner.os }}-"
+          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
+          restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
 
       - name: Run unit tests
         run: swift test --enable-code-coverage
-
-      - name: Cache .build
-        if: steps.restore-build.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
 ```
 
 (Explain how much better things got)
 
 ## Separate Build Step From Test Runs
 
-```yaml
+```diff
       - name: Restore .build
-        id: "restore-cache"
+        id: "restore-build"
         uses: actions/cache/restore@v4
         with:
           path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
-          restore-keys: "swiftpm-build-${{ runner.os }}-"
+          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
+          restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
 
-      - name: Build package
-        run: swift build
+-      - name: Run unit tests
+-        run: swift test --enable-code-coverage
++      - name: Build package
++        run: swift build
 
       - name: Cache .build
         if: steps.restore-build.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
+          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
 
-      - name: Run unit tests
-        run: swift test --enable-code-coverage
++      - name: Run unit tests
++        run: swift test --enable-code-coverage
 ```
 
 ## Optimize Build Steps For Maximum Speed
 
 ```yaml
       - name: Restore .build
-        id: "restore-cache"
+        id: "restore-build"
         uses: actions/cache/restore@v4
         with:
           path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
-          restore-keys: "swiftpm-build-${{ runner.os }}-"
+          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
+          restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
 
       - name: Build package
-        run: swift build --build-tests --enable-code-coverage
+-        run: swift build
++        run: swift build --build-tests --enable-code-coverage
 
       - name: Cache .build
         if: steps.restore-build.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
+          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
 
       - name: Run unit tests
-        run: swift test --skip-build --enable-code-coverage
+-        run: swift test --enable-code-coverage
++        run: swift test --skip-build --enable-code-coverage
 ```
 
 ## Cache Build Artifacts When Using A Dockerfile
@@ -190,90 +195,77 @@ Simple install `zstd` on the machine before any calls to `actions/cache`:
 Need to change the `runs-on` to a Swift image, from an Ubuntu image.
 Need to install Docker manually.
 Need to modify the Dockerfile to only copy existing built stuff, and don't build the app itself.
+Use different caching key.
 
-```yaml
+```diff
 name: deploy
 on:
   push: { branches: [main] }
 
 jobs:
   deploy:
-    runs-on: swift:6.0-jammy
+    runs-on: ubuntu-latest
++    container: swift:6.0-jammy
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install zstd
-        run: |
-          apt-get update -y
-          apt-get install -y zstd
-
-      - name: Restore .build
-        id: "restore-cache"
-        uses: actions/cache/restore@v4
-        with:
-          path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
-          restore-keys: "swiftpm-build-${{ runner.os }}-"
-
-      - name: Build App
-        run: |
-          apt-get update -y
-          apt-get install -y libjemalloc-dev
-          swift build \
-            -c release \
-            --static-swift-stdlib \
-            -Xlinker -ljemalloc \
-            $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
-
-      - name: Cache .build
-        if: steps.restore-build.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
-        with:
-          path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
-
-      - name: Install Docker
-        run: |
-          set -eu
-
-          # https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
-
-          # Add Docker's official GPG key:
-          apt-get update -y
-          apt-get install ca-certificates curl gnupg -y
-          install -m 0755 -d /etc/apt/keyrings
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-          chmod a+r /etc/apt/keyrings/docker.gpg
-
-          # Add the repository to Apt sources:
-          # shellcheck source=/dev/null
-          echo \
-            "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-              \"$(. /etc/os-release && echo "$VERSION_CODENAME")\" stable" |
-            tee /etc/apt/sources.list.d/docker.list >/dev/null
-          apt-get update -y
-
-          # Install Docker:
-          apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
++      - name: Install zstd
++        run: |
++          apt-get update -y
++          apt-get install -y zstd
++
++      - name: Restore .build
++        id: "restore-build"
++        uses: actions/cache/restore@v4
++        with:
++          path: .build
++          key: "swiftpm-deploy-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
++          restore-keys: "swiftpm-deploy-build-${{ runner.os }}-"
++
++      - name: Build App
++        run: |
++          apt-get update -y
++          apt-get install -y libjemalloc-dev
++          swift build \
++            -c release \
++            --static-swift-stdlib \
++            -Xlinker -ljemalloc \
++            $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
++
++      - name: Cache .build
++        if: steps.restore-build.outputs.cache-hit != 'true'
++        uses: actions/cache/save@v4
++        with:
++          path: .build
++          key: "swiftpm-deploy-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
++
++      - name: Install Docker
++        run: |
++          set -eu
++
++          # https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
++
++          # Add Docker's official GPG key:
++          apt-get update -y
++          apt-get install ca-certificates curl gnupg -y
++          install -m 0755 -d /etc/apt/keyrings
++          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
++          chmod a+r /etc/apt/keyrings/docker.gpg
++
++          # Add the repository to Apt sources:
++          # shellcheck source=/dev/null
++          echo \
++            "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
++              \"$(. /etc/os-release && echo "$VERSION_CODENAME")\" stable" |
++            tee /etc/apt/sources.list.d/docker.list >/dev/null
++          apt-get update -y
++
++          # Install Docker:
++          apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
 
       - name: Build image
         run: docker build --network=host -t app:latest .
-
-      # Push the image to a Docker container registry
-```
-
-```diff
-      - name: Build App
-        run: |
-          apt-get update -y
-          apt-get install -y libjemalloc-dev
-          swift build \
-+            --product App \
-            -c release \
-            --static-swift-stdlib \
-            -Xlinker -ljemalloc \
-            $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
 ```
 
 ```diff
@@ -299,7 +291,6 @@ jobs:
 -# Build the application, with optimizations, with static linking, and using jemalloc
 -# N.B.: The static version of jemalloc is incompatible with the static Swift runtime.
 -RUN swift build -c release \
--        --product App \
 -        --static-swift-stdlib \
 -        -Xlinker -ljemalloc
 -
@@ -313,6 +304,8 @@ jobs:
 # Copy static swift backtracer binary to staging area
 RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
 ```
+
+This will be what you have after the changes:
 
 ```dockerfile
 # ================================
@@ -340,6 +333,21 @@ RUN [ -d /build/Public ] && { mv /build/Public ./Public && chmod -R a-w ./Public
 RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w ./Resources; } || true
 ```
 
+## Don't Build What You Don't Need
+
+```diff
+      - name: Build App
+        run: |
+          apt-get update -y
+          apt-get install -y libjemalloc-dev
+          swift build \
++            --product App \
+            -c release \
+            --static-swift-stdlib \
+            -Xlinker -ljemalloc \
+            $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
+```
+
 ## When Things Go Wrong
 
 Sometimes some inconsistency in the cached .build directory and what Swift expects, can result in build failures.
@@ -354,12 +362,12 @@ When this happens, you can do any of the 3 following options:
 ```diff
       - name: Restore .build
 +        if: ${{ !(github.run_attempt > 1) }}
-        id: "restore-cache"
+        id: "restore-build"
         uses: actions/cache/restore@v4
         with:
           path: .build
-          key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
-          restore-keys: "swiftpm-build-${{ runner.os }}-"
+          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
+          restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
 ```
 
 2- Use [this](https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy) simple workflow to delete all saved caches, so `Restore .build` step doesn't find anything to restore, and your build starts from a clean state.
@@ -367,3 +375,5 @@ When this happens, you can do any of the 3 following options:
 3- Manually delete the caches through GitHub Actions UI:
 
 ![Delete Cache In GitHub UI](delete-caches-in-github-ui.png)
+
+## RunsOn machines - runson/cache (If sponsored)
