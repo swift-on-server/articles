@@ -2,7 +2,7 @@
 
 One of the biggest weak points of Swift is how slow the build system is. It can easily take anything between 10 to 40 minutes for a typical Swift CI to run, depending on how big the project is, what build configuration you're using, and other factors.
 By optimizing your CI runtime, you'll not only save precious developer time, but you'll also either pay less for CI, or consume less of your GitHub Actions free quota.
-In this article, we'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14 minutes 30 seconds in deployments, down to less than 4 and 8 minutes. The bigger your project is, the bigger the gap will be.
+In this article, we'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14 minutes 30 seconds in deployments, down to less than 4 and 3 minutes. The bigger your project is, the bigger the gap will be.
 
 ## The Problem
 
@@ -326,7 +326,7 @@ RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
 RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
 ```
 
-3 minutes 30 seconds total.
+3 minutes total.
 
 
 mention that all times include 25s of caching .build. That won't happen at all if "Restore .build" has found an exact match for the cache key, for example in PRs.
