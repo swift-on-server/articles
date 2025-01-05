@@ -69,7 +69,6 @@ In Dockerfile:
 `FROM swift:6.0-jammy`
 `FROM ubuntu:jammy`
 
-
 ## Speed Up Your CI Using actions/cache
 
 ```yaml
@@ -161,7 +160,7 @@ Simple install `zstd` on the machine before any calls to `actions/cache`:
         run: swift test --enable-code-coverage
 ```
 
-## Optimize The Build Step For Maximum Speed
+## Optimize Build Steps For Maximum Speed
 
 ```yaml
       - name: Restore .build
@@ -218,7 +217,14 @@ jobs:
           restore-keys: "swiftpm-build-${{ runner.os }}-"
 
       - name: Build App
-        run: swift build --product App
+        run: |
+          apt-get update -y
+          apt-get install -y libjemalloc-dev
+          swift build \
+            -c release \
+            --static-swift-stdlib \
+            -Xlinker -ljemalloc \
+            $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
 
       - name: Cache .build
         if: steps.restore-build.outputs.cache-hit != 'true'
@@ -257,28 +263,97 @@ jobs:
       # Push the image to a Docker container registry
 ```
 
-```dockerfile
-RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
-    && apt-get -q update \
-    && apt-get -q dist-upgrade -y \
-    && apt-get install -y libjemalloc-dev
+```diff
+      - name: Build App
+        run: |
+          apt-get update -y
+          apt-get install -y libjemalloc-dev
+          swift build \
++            --product App \
+            -c release \
+            --static-swift-stdlib \
+            -Xlinker -ljemalloc \
+            $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
+```
 
-WORKDIR /staging
+```diff
+-# Install OS updates
+-RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
+-    && apt-get -q update \
+-    && apt-get -q dist-upgrade -y \
+-    && apt-get install -y libjemalloc-dev
+-
+-# Set up a build area
+-WORKDIR /build
+-
+-# First just resolve dependencies.
+-# This creates a cached layer that can be reused
+-# as long as your Package.swift/Package.resolved
+-# files do not change.
+-COPY ./Package.* ./
+-RUN swift package resolve \
+-        $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
+
++WORKDIR /staging
+
+-# Build the application, with optimizations, with static linking, and using jemalloc
+-# N.B.: The static version of jemalloc is incompatible with the static Swift runtime.
+-RUN swift build -c release \
+-        --product App \
+-        --static-swift-stdlib \
+-        -Xlinker -ljemalloc
+-
+-# Switch to the staging area
+-WORKDIR /staging
 
 # Copy main executable to staging area
-COPY .build/debug/App ./
+-RUN cp "$(swift build --package-path /build -c release --show-bin-path)/App" ./
++RUN cp "$(swift build -c release --show-bin-path)/App" ./
 
 # Copy static swift backtracer binary to staging area
 RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
 ```
 
-## Cache Can Go Broken Once In A While
+```dockerfile
+# ================================
+# Build image
+# ================================
+FROM swift:6.0-jammy AS build
 
-Use `!(github.run_attempt > 1)` in an `if` condition so rerun of the same job doesn't use cache at all, which results in a clean build.
+WORKDIR /staging
 
-```yaml
+# Copy entire repo into container
+COPY . .
+
+# Copy main executable to staging area
+RUN cp "$(swift build -c release --show-bin-path)/App" ./
+
+# Copy static swift backtracer binary to staging area
+RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
+
+# Copy resources bundled by SPM to staging area
+RUN find -L "$(swift build --package-path /build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
+
+# Copy any resources from the public directory and views directory if the directories exist
+# Ensure that by default, neither the directory nor any of its contents are writable.
+RUN [ -d /build/Public ] && { mv /build/Public ./Public && chmod -R a-w ./Public; } || true
+RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w ./Resources; } || true
+```
+
+## When Things Go Wrong
+
+Sometimes some inconsistency in the cached .build directory and what Swift expects, can result in build failures.
+This usually manifests as weird build failures with no apparent reason and no helpful error logs, or when the error logs point to some code that no longer exists.
+
+Thankfully this won't be frequent and theoretically shouldn't happen at all, and is also easy to work around.
+
+When this happens, you can do any of the 3 following options:
+
+1- Use `!(github.run_attempt > 1)` in an `if` condition so rerun of the same job doesn't use cache at all, and results in a clean build.
+
+```diff
       - name: Restore .build
-        if: ${{ !(github.run_attempt > 1) }}
++        if: ${{ !(github.run_attempt > 1) }}
         id: "restore-cache"
         uses: actions/cache/restore@v4
         with:
@@ -286,3 +361,9 @@ Use `!(github.run_attempt > 1)` in an `if` condition so rerun of the same job do
           key: "swiftpm-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
           restore-keys: "swiftpm-build-${{ runner.os }}-"
 ```
+
+2- Use [this](https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy) simple workflow to delete all saved caches, so `Restore .build` step doesn't find anything to restore, and your build starts from a clean state.
+
+3- Manually delete the caches through GitHub Actions UI:
+
+![Delete Cache In GitHub UI](delete-caches-in-github-ui.png)
