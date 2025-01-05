@@ -2,7 +2,7 @@
 
 One of the biggest weak points of Swift is how slow the build system is. It can easily take anything between 10 to 40 minutes for a typical Swift CI to run, depending on how big the project is, what build configuration you're using, and other factors.
 By optimizing your CI runtime, you'll not only save precious developer time, but you'll also either pay less for CI, or consume less of your GitHub Actions free quota.
-In this article, we'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 15 minutes in deployments, down to 4 and 8 minutes. The bigger your project is, the bigger the gap will be.
+In this article, we'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14 minutes 30 seconds in deployments, down to less than 4 and 8 minutes. The bigger your project is, the bigger the gap will be.
 
 ## The Problem
 
@@ -48,40 +48,8 @@ jobs:
       # Push the image to a Docker container registry
 ```
 
-As mentioned before, these CIs usually take around 10 minutes in tests and 15 minutes for deployments in [Penny](https://github.com/vapor/penny-bot).
+As mentioned before, these CIs usually take 10 minutes in tests and 14 minutes 30 seconds for deployments in [Penny](https://github.com/vapor/penny-bot).
 How can we improve them?
-
-## Use Swift and Ubuntu Jammy
-
-In CI file:
-
-```yaml
-jobs:
-  unit-tests:
-    runs-on: ubuntu-latest
--    container: swift:6.0-noble
-+    container: swift:6.0-jammy
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Run unit tests
-        run: swift test --enable-code-coverage
-
-      # Process the code coverage report, etc...
-```
-
-In Dockerfile:
-
-```diff
--FROM swift:6.0-noble
-+FROM swift:6.0-jammy
-
-...
-
--FROM ubuntu:noble
-+FROM ubuntu:jammy
-```
 
 ## Speed Up Your CI Using actions/cache
 
@@ -104,6 +72,9 @@ In Dockerfile:
 +          path: .build
 +          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
 ```
+
+down to 6 minutes 30s. 30 seconds restore 2 minutes 50 seconds cache for 1.5 GB.
+note not always cache step will be triggered.
 
 ## Speed Up Cache Steps Using zstd
 
@@ -134,9 +105,12 @@ Simply install `zstd` on the machine before any calls to `actions/cache`:
         run: swift test --enable-code-coverage
 ```
 
-(Explain how much better things got)
+down to 4 minutes. 15 seconds restore 30 seconds cache. 1.4 GB of cache.
+100 seconds tests.
 
 ## Separate Build Step From Test Runs
+
+Times are assuming to purge the previous caches (explained in a step below)
 
 ```diff
       - name: Restore .build
@@ -162,6 +136,9 @@ Simply install `zstd` on the machine before any calls to `actions/cache`:
 +      - name: Run unit tests
 +        run: swift test --enable-code-coverage
 ```
+
+9 minutes 15 seconds total.
+1 minute build package, 7 minutes unit tests.
 
 ## Optimize Build Steps For Maximum Speed
 
@@ -190,12 +167,16 @@ Simply install `zstd` on the machine before any calls to `actions/cache`:
 +        run: swift test --skip-build --enable-code-coverage
 ```
 
+4 minutes 20s total.
+build package 1 minute, run unit tests 2 minutes.
+
 ## Cache Build Artifacts When Using A Dockerfile
 
 Need to change the `runs-on` to a Swift image, from an Ubuntu image.
 Need to install Docker manually.
 Need to modify the Dockerfile to only copy existing built stuff, and don't build the app itself.
 Use different caching key.
+Use `--product App`.
 
 ```diff
 name: deploy
@@ -205,7 +186,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-+    container: swift:6.0-jammy
++    container: swift:6.0-noble
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -229,6 +210,7 @@ jobs:
 +          apt-get install -y libjemalloc-dev
 +          swift build \
 +            -c release \
++            --product App \
 +            --static-swift-stdlib \
 +            -Xlinker -ljemalloc \
 +            $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
@@ -303,6 +285,17 @@ jobs:
 
 # Copy static swift backtracer binary to staging area
 RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
+
+# Copy resources bundled by SPM to staging area
+-RUN find -L "$(swift build --package-path /build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
++RUN find -L "$(swift build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
+
+# Copy any resources from the public directory and views directory if the directories exist
+# Ensure that by default, neither the directory nor any of its contents are writable.
+-RUN [ -d /build/Public ] && { mv /build/Public ./Public && chmod -R a-w ./Public; } || true
+-RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w ./Resources; } || true
++RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
++RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
 ```
 
 This will be what you have after the changes:
@@ -311,7 +304,7 @@ This will be what you have after the changes:
 # ================================
 # Build image
 # ================================
-FROM swift:6.0-jammy AS build
+FROM swift:6.0-noble AS build
 
 WORKDIR /staging
 
@@ -325,28 +318,18 @@ RUN cp "$(swift build -c release --show-bin-path)/App" ./
 RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
 
 # Copy resources bundled by SPM to staging area
-RUN find -L "$(swift build --package-path /build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
+RUN find -L "$(swift build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
 
 # Copy any resources from the public directory and views directory if the directories exist
 # Ensure that by default, neither the directory nor any of its contents are writable.
-RUN [ -d /build/Public ] && { mv /build/Public ./Public && chmod -R a-w ./Public; } || true
-RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w ./Resources; } || true
+RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
+RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
 ```
 
-## Don't Build What You Don't Need
+3 minutes 30 seconds total.
 
-```diff
-      - name: Build App
-        run: |
-          apt-get update -y
-          apt-get install -y libjemalloc-dev
-          swift build \
-+            --product App \
-            -c release \
-            --static-swift-stdlib \
-            -Xlinker -ljemalloc \
-            $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
-```
+
+mention that all times include 25s of caching .build. That won't happen at all if "Restore .build" has found an exact match for the cache key, for example in PRs.
 
 ## When Things Go Wrong
 
