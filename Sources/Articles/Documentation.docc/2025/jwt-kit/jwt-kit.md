@@ -53,7 +53,7 @@ In JWTKit everything revolves around the ``JWTKeyCollection`` object: a collecti
 let keyCollection = JWTKeyCollection()
 ```
 
-If you know the signing algorithm you want to use, adding keys to the collection is also straightforward:
+Adding keys to the collection is also straightforward:
 
 <!-- @Snippet(path: "site/Snippets/JWTKit", slice: key_collection_add_hmac) -->
 
