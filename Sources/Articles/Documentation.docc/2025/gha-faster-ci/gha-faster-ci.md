@@ -50,8 +50,11 @@ jobs:
       # Push the image to a Docker container registry and deploy the app
 ```
 
-As mentioned before, these CIs usually take 10 minutes in tests and 14 minutes 30 seconds for deployments in [Penny](https://github.com/vapor/penny-bot).
+These CIs usually take 10 minutes in tests and 14 minutes 30 seconds for deployments in [Penny](https://github.com/vapor/penny-bot).
 That's too much time wasted waiting. How can we improve these CI times?
+
+![Tests CI Initial State](tests-ci-initial.png)
+![Deployment CI Initial State](deploy-ci-initial.png)
 
 ## Speed Up Your CI Using actions/cache
 
@@ -80,7 +83,7 @@ It'll look like this in the tests CI:
 ```
 
 In the "Restore .build" step, we're using the `restore` capability of `actions/cache`, and asking it to restore our previously-uploaded cache to the `.build` directory.
-The `key` is a way to uniquely identify caches. The `key` could look like `swiftpm-tests-build-Linux-f5ded47aafafe1f9f542e833a5f3dc01970bbaee`. If `actions/cache` finds and exact match for a cache with that name, it'll restore that cache for us. Otherwise it'll restore the latest cache that start with the `restore-keys`, which in our case will look like `swiftpm-tests-build-Linux-`. Note that `actions/cache` follows some branch protection rules so it's not vulnerable to cache poisoning attacks. That means that it'll only restore a cache if it was cached from the current branch or the primary branch of your repository.
+The `key` is a way to uniquely identify caches and resolves to a string like `swiftpm-tests-build-Linux-f5ded47aafafe1f9f542e833a5f3dc01970bbaee`. If `actions/cache` finds and exact match for a cache with that name, it'll restore that cache for us. Otherwise it'll restore the latest cache that start with the `restore-keys`, which in our case will look like `swiftpm-tests-build-Linux-`. Note that `actions/cache` follows some branch protection rules so it's not vulnerable to cache poisoning attacks. That means that it'll only restore a cache if it was cached from the current branch or the primary branch of your repository.
 
 In the "Cache .build" step, you're also simply caching your `.build` directory, now that the build and tests process is over. This is so the next CI runs can use this cache.
 The `key` matches the one in the `key` of the "Restore .build" step, and with the `if` condition, we're trying to avoid spending time in the cache step when we've already found an exact cache key match in the "Restore .build" step. This is because `actions/cache` rejects cache entries with duplicate names, and does not have an update mechanism.
@@ -95,15 +98,14 @@ But if you re-run the CI job, you'll notice a big difference.
 Your tests CI runtime will drop to 6 minutes 30s, saving 3 minutes 30s.
 This is assuming both your restore and cache steps are run, which is not always true thanks to the if condition we have in "Cache .build" (`if: steps.restore-build.outputs.cache-hit != 'true'`). But in a lot of situations you'll still be restoring and uploading caches in the same CI run. For example every single time you push changes to a branch.
 
+![Tests CI With Cache](tests-ci-with-cache.png)
+
 You've already saved at least 3 and a half minutes of time in your CI runtimes and that's great, but let's look closer.
 What's consuming the CI runtime now that you're using caching? Is it really taking 6 and a half minutes for the tests to run even after your efforts?
 
 The answer is No. Your Swift tests runtime has dropped to less than 3 minutes, but if you look at the "Cache .build" step in the first run of your CI, you'll notice "Cache .build" is taking more than **2 and a half minutes** caching around **1.5 GB** worth of `.build` data, with the "Restore .build" step taking around **30 seconds** in the next run to restore the data.
 
 Wouldn't it be so nice if you could decrease the times spent caching? After all, only 3 minutes of your CI runtime is related to your test steps.
-
-<!-- down to 6 minutes 30s. 30 seconds restore 2 minutes 50 seconds cache for 1.5 GB.
-note not always cache step will be triggered. -->
 
 ## Speed Up Cache Steps Using zstd
 
@@ -131,6 +133,10 @@ Simply install `zstd` on the machine before any calls to `actions/cache`, so `ac
       - name: Run unit tests
         run: swift test --enable-code-coverage
 ```
+
+Run the tests CI twice, so the second run can leverage the zstd cache and give you an accurate idea.
+
+![Tests CI With ZSTD](tests-ci-with-zstd.png)
 
 Take another look at your CI times. The whole CI is running in **4 minutes**, down from 6 and a half minutes.
 It's thanks to "Restore .build" only taking half the previous time at **15 seconds**, and "Cache .build" taking **less than 30s**, down from the previous 2 minutes and a half.
@@ -170,12 +176,13 @@ It's simple. Build the app first, run the tests later after you're done caching 
 
 Looks good, right?
 
-Run the tests CI twice, to make sure the cache is updated. You'll notice a big regression. Even when cache is available, the CI runtime has gone back up to around 9 minutes 15 seconds.
+Run the tests CI twice, to make sure the cache is updated for the second run.
+
+![Tests CI With Separated Build Steps](tests-ci-separated-steps.png)
+
+You'll notice a big regression. Even when cache is available, the CI runtime has gone back up to around 9 minutes 15 seconds.
 Looking at runtimes of each step, you'll notice that the "Build package" step is only taking 1 minutes when a cache is available, but the "Run unit tests" is taking a whopping 7 minutes to run. It's as if the "Run unit tests" step is re-building majority of the project again.
 How can we overcome this issue?
-
-<!-- 9 minutes 15 seconds total.
-1 minute build package, 7 minutes unit tests. -->
 
 ## Optimize Build Steps For Maximum Speed
 
@@ -199,15 +206,16 @@ Change your "Build package" and "Run unit tests" to the following:
 +        run: swift test --skip-build --enable-code-coverage
 ```
 
-Rerun the job once again after the cache is updated. The CI runtime is down to **4 minutes 20 seconds**!
-Great! You're almost back to the 4-minutes CI runtime mark, and only paying around 20 seconds of penalty to make sure the CI steps are more logical and account for unit tests failure in a better manner.
+Rerun the job once again after the cache is updated.
+
+![Tests CI With Optimized Separated Build Steps](tests-ci-optimized-separated-steps.png)
+
+Great! The CI runtime is down to **4 minutes 20 seconds**!
+You're almost back to the 4-minutes CI runtime mark, and only paying around 20 seconds of penalty to make sure the CI steps are more logical and account for unit tests failure in a better manner.
 
 But how did this happen? It's simple! You were not caching all you could in the "Build package" step.
 With the updated CI file, you're building the test targets as well thanks to the `--build-tests` flag, and also caching part of the code coverage work that the unit tests step would need to do, by using `--enable-code-coverage` in the build step. Note that you still need to use `--enable-code-coverage` in the unit-tests run step if you want to make sure code coverage is gathered in runtime of your unit tests as well.
 Finally you use `--skip-build` flag when running unit tests, because you know you've already filly build the project and there is no reason to do it twice.
-
-<!-- 4 minutes 20s total.
-build package 1 minute, run unit tests 2 minutes. -->
 
 ## Cache Build Artifacts When Using A Dockerfile
 
@@ -387,7 +395,10 @@ The "Build App" step is mostly a copy of what was in the Dockerfile.
 It installs jemalloac to be able to use it in the app compilation, and in the last line of the step, it makes sure to respect your current `Package.resolved` file instead of randomly updating your packages.
 
 Rerun the deployment CI twice to make sure the cache is populated.
-It's now taking a mere **3 minutes** for the deployment CI to finish, down from 14 minutes and a half!
+
+![Deployment CI With Cache](deploy-ci-with-cache.png)
+
+It's now taking a mere **3 minutes** for the deployment CI to finish, down from 14 minutes 30 seconds!
 
 ## When Things Go Wrong
 
