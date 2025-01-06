@@ -6,7 +6,7 @@ In this tutorial, you'll learn how to use JWTKit to create and validate JWTs in 
 
 ## What is a JSON Web Token (JWT)?
 
-A JWT is a compact, URL-safe way to represent claims between two parties. The token is digitally signed, which makes it secure and trustworthy. JWTs are commonly used for authentication and authorisation in web applications, APIs, and microservices.
+A JWT is a compact, URL-safe way to represent claims between two parties. The token is digitally signed, which makes it secure and trustworthy. JWTs are commonly used for authentication and authorisation in (web) applications, APIs, and microservices.
 
 A JWT consists of three parts: a header, a payload, and a signature. The header contains metadata about the token, such as the type of token and the algorithm used to sign it. The payload contains the claims, which are statements about an entity (typically the user) and additional data. The signature is used to verify that the token is valid and has not been tampered with.
 
