@@ -45,7 +45,7 @@ targets: [
 
 ## Configuration
 
-In JWTKit everything revolves around the ``JWTKeyCollection`` object. As the name suggests, it's a collection of keys that can be used to sign and verify JWTs. The declaration is simple, you can add this in your app's configuration code:
+In JWTKit everything revolves around the ``JWTKeyCollection`` object: a collection of keys that can be used to sign and verify JWTs. The declaration is simple, you can add this in your app's configuration code:
 
 <!-- @Snippet(path: "site/Snippets/JWTKit", slice: key_collection_init) -->
 
