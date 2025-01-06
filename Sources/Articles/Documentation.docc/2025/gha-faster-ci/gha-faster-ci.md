@@ -134,11 +134,14 @@ Simply install `zstd` on the machine before any calls to `actions/cache`, so `ac
 
 Take another look at your CI times. The whole CI is running in **4 minutes**, down from 6 and a half minutes.
 It's thanks to "Restore .build" only taking half the previous time at **15 seconds**, and "Cache .build" taking **less than 30s**, down from the previous 2 minutes and a half.
-This 4 minutes of CI runtime includes **100s** of tests runtime as well! If your tests take less time than that, you're CI will be even faster.
+This 4 minutes of CI runtime includes **100s** of tests runtime as well! If your tests take less time than that, your CI will be even faster.
 
 ## Separate Build Step From Test Runs
 
-Times are assuming to purge the previous caches (explained in a step below)
+A logical problem in your current tests CI file is that if the tests fail, GitHub Actions will end the run and the "Cache .build" step won't be triggered.
+This will be an annoyance in new pull requests, specially if they're big. Your CI will need to rebuild a large portion of the project, which might substantially increase the CI time, up to the original 10 minutes of CI time you had. But when the tests result in a failure, the cache step will be skipped, and in the next run it'll need to build the whole changes all over again.
+You can fix this by separating the build step from the test-run step.
+It's simple. Build the app first, run the tests later after you're done caching the changes:
 
 ```diff
       - name: Restore .build
@@ -165,20 +168,21 @@ Times are assuming to purge the previous caches (explained in a step below)
 +        run: swift test --enable-code-coverage
 ```
 
-9 minutes 15 seconds total.
-1 minute build package, 7 minutes unit tests.
+Looks good, right?
+
+Run the tests CI twice, to make sure the cache is updated. You'll notice a big regression. Even when cache is available, the CI runtime has gone back up to around 9 minutes 15 seconds.
+Looking at runtimes of each step, you'll notice that the "Build package" step is only taking 1 minutes when a cache is available, but the "Run unit tests" is taking a whopping 7 minutes to run. It's as if the "Run unit tests" step is re-building majority of the project again.
+How can we overcome this issue?
+
+<!-- 9 minutes 15 seconds total.
+1 minute build package, 7 minutes unit tests. -->
 
 ## Optimize Build Steps For Maximum Speed
 
-```yaml
-      - name: Restore .build
-        id: "restore-build"
-        uses: actions/cache/restore@v4
-        with:
-          path: .build
-          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
-          restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
+There are a few tricks we haven't utilized yet.
+Change your "Build package" and "Run unit tests" to the following:
 
+```yaml
       - name: Build package
 -        run: swift build
 +        run: swift build --build-tests --enable-code-coverage
@@ -195,16 +199,110 @@ Times are assuming to purge the previous caches (explained in a step below)
 +        run: swift test --skip-build --enable-code-coverage
 ```
 
-4 minutes 20s total.
-build package 1 minute, run unit tests 2 minutes.
+Rerun the job once again after the cache is updated. The CI runtime is down to **4 minutes 20 seconds**!
+Great! You're almost back to the 4-minutes CI runtime mark, and only paying around 20 seconds of penalty to make sure the CI steps are more logical and account for unit tests failure in a better manner.
+
+But how did this happen? It's simple! You were not caching all you could in the "Build package" step.
+With the updated CI file, you're building the test targets as well thanks to the `--build-tests` flag, and also caching part of the code coverage work that the unit tests step would need to do, by using `--enable-code-coverage` in the build step. Note that you still need to use `--enable-code-coverage` in the unit-tests run step if you want to make sure code coverage is gathered in runtime of your unit tests as well.
+Finally you use `--skip-build` flag when running unit tests, because you know you've already filly build the project and there is no reason to do it twice.
+
+<!-- 4 minutes 20s total.
+build package 1 minute, run unit tests 2 minutes. -->
 
 ## Cache Build Artifacts When Using A Dockerfile
 
-Need to change the `runs-on` to a Swift image, from an Ubuntu image.
-Need to install Docker manually.
-Need to modify the Dockerfile to only copy existing built stuff, and don't build the app itself.
-Use different caching key.
-Use `--product App`.
+Your tests CI is pretty fast now and only takes around 4 minutes.
+But what about your deployments?
+While there are a lot of similarities in implementing caching in tests CI and deployment CI, there are still some differences.
+The project build in the deployment CI usually happens in a Dockerfile. While people have found ways around this, it's not easy to use `actions/cache` for files and folders that are in a Dockerfile.
+
+To make your Dockerfile cache-friendly, you need to pull out the build step our of the Dockerfile and move it to the deployment CI GitHub Actions file.
+For now, let's assume the build step is not happening in the Dockerfile, and the Dockerfile is only consuming the app that is already built.
+
+Modify your Dockerfile like so. Note that the code-diff below is based on Vapor template's Dockerfile, which is also what Hummingbird template's Dockerfile is based on.
+If you've changed your main executable's name from the default `App` to something else, make sure you substitute `App` with that name in the Dockerfile below:
+
+```diff
+-# Install OS updates
+-RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
+-    && apt-get -q update \
+-    && apt-get -q dist-upgrade -y \
+-    && apt-get install -y libjemalloc-dev
+-
+-# Set up a build area
+-WORKDIR /build
+-
+-# First just resolve dependencies.
+-# This creates a cached layer that can be reused
+-# as long as your Package.swift/Package.resolved
+-# files do not change.
+-COPY ./Package.* ./
+-RUN swift package resolve \
+-        $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
+
++WORKDIR /staging
+
+-# Build the application, with optimizations, with static linking, and using jemalloc
+-# N.B.: The static version of jemalloc is incompatible with the static Swift runtime.
+-RUN swift build -c release \
+-        --product App \
+-        --static-swift-stdlib \
+-        -Xlinker -ljemalloc
+-
+-# Switch to the staging area
+-WORKDIR /staging
+
+# Copy main executable to staging area
+-RUN cp "$(swift build --package-path /build -c release --show-bin-path)/App" ./
++RUN cp "$(swift build -c release --show-bin-path)/App" ./
+
+# Copy static swift backtracer binary to staging area
+RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
+
+# Copy resources bundled by SPM to staging area
+-RUN find -L "$(swift build --package-path /build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
++RUN find -L "$(swift build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
+
+# Copy any resources from the public directory and views directory if the directories exist
+# Ensure that by default, neither the directory nor any of its contents are writable.
+-RUN [ -d /build/Public ] && { mv /build/Public ./Public && chmod -R a-w ./Public; } || true
+-RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w ./Resources; } || true
++RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
++RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
+```
+
+This is how your Dockerfile will look like after the changes:
+
+```dockerfile
+# ================================
+# Build image
+# ================================
+FROM swift:6.0-noble AS build
+
+WORKDIR /staging
+
+# Copy entire repo into container
+COPY . .
+
+# Copy main executable to staging area
+RUN cp "$(swift build -c release --show-bin-path)/App" ./
+
+# Copy static swift backtracer binary to staging area
+RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
+
+# Copy resources bundled by SPM to staging area
+RUN find -L "$(swift build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
+
+# Copy any resources from the public directory and views directory if the directories exist
+# Ensure that by default, neither the directory nor any of its contents are writable.
+RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
+RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
+```
+
+You're no longer building your app in the Dockerfile. You simply copy the whole repository to the Dockerfile like before, but you expect the repository to already contain the build artifacts and the built executable.
+
+Let's not let down your Dockerfile! You need to modify the CI deployment file to not only properly build the project, but also to use caching like you've learned before.
+You'll also need to add 2 extra things to the CI file. If you've changed your main executable's name from the default `App` to something else, make sure you substitute `App` with that name in the deployment file below as well:
 
 ```diff
 name: deploy
@@ -254,7 +352,7 @@ jobs:
 +        run: |
 +          set -eu
 +
-+          # https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
++          # Installation commands from https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository:
 +
 +          # Add Docker's official GPG key:
 +          apt-get update -y
@@ -278,96 +376,30 @@ jobs:
         run: docker build --network=host -t app:latest .
 ```
 
-```diff
--# Install OS updates
--RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
--    && apt-get -q update \
--    && apt-get -q dist-upgrade -y \
--    && apt-get install -y libjemalloc-dev
--
--# Set up a build area
--WORKDIR /build
--
--# First just resolve dependencies.
--# This creates a cached layer that can be reused
--# as long as your Package.swift/Package.resolved
--# files do not change.
--COPY ./Package.* ./
--RUN swift package resolve \
--        $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
+Most of the new steps look familiar to you. You've already used them to speed up your tests CI.
+On top of those caching steps, you also need to make sure to:
+* Instruct GitHub Actions to run the CI file in a `swift:6.0-noble` container, instead of `ubuntu-latest`.
+* Slightly modify the caching key to make sure your deployments don't go using your tests' caches!
+  * You've simply modified `swiftpm-tests-build` to `swiftpm-deploy-build` in the cache keys above, and that's enough.
+* Manually install Docker since swift images don't contain Docker.
 
-+WORKDIR /staging
+The "Build App" step is mostly a copy of what was in the Dockerfile.
+It installs jemalloac to be able to use it in the app compilation, and in the last line of the step, it makes sure to respect your current `Package.resolved` file instead of randomly updating your packages.
 
--# Build the application, with optimizations, with static linking, and using jemalloc
--# N.B.: The static version of jemalloc is incompatible with the static Swift runtime.
--RUN swift build -c release \
--        --static-swift-stdlib \
--        -Xlinker -ljemalloc
--
--# Switch to the staging area
--WORKDIR /staging
-
-# Copy main executable to staging area
--RUN cp "$(swift build --package-path /build -c release --show-bin-path)/App" ./
-+RUN cp "$(swift build -c release --show-bin-path)/App" ./
-
-# Copy static swift backtracer binary to staging area
-RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
-
-# Copy resources bundled by SPM to staging area
--RUN find -L "$(swift build --package-path /build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
-+RUN find -L "$(swift build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
-
-# Copy any resources from the public directory and views directory if the directories exist
-# Ensure that by default, neither the directory nor any of its contents are writable.
--RUN [ -d /build/Public ] && { mv /build/Public ./Public && chmod -R a-w ./Public; } || true
--RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w ./Resources; } || true
-+RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
-+RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
-```
-
-This will be what you have after the changes:
-
-```dockerfile
-# ================================
-# Build image
-# ================================
-FROM swift:6.0-noble AS build
-
-WORKDIR /staging
-
-# Copy entire repo into container
-COPY . .
-
-# Copy main executable to staging area
-RUN cp "$(swift build -c release --show-bin-path)/App" ./
-
-# Copy static swift backtracer binary to staging area
-RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
-
-# Copy resources bundled by SPM to staging area
-RUN find -L "$(swift build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
-
-# Copy any resources from the public directory and views directory if the directories exist
-# Ensure that by default, neither the directory nor any of its contents are writable.
-RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
-RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
-```
-
-3 minutes total.
-
-mention that all times include 25s of caching .build. That won't happen at all if "Restore .build" has found an exact match for the cache key, for example in PRs.
+Rerun the deployment CI twice to make sure the cache is populated.
+It's now taking a mere **3 minutes** for the deployment CI to finish, down from 14 minutes and a half!
 
 ## When Things Go Wrong
 
 Sometimes some inconsistency in the cached .build directory and what Swift expects, can result in build failures.
-This usually manifests as weird build failures with no apparent reason and no helpful error logs, or when the error logs point to some code that no longer exists.
+This usually manifests as weird build failures with no apparent reason and no helpful error logs, or when the error logs point to something that should no longer exists.
 
-Thankfully this won't be frequent and theoretically shouldn't happen at all, and is also easy to work around.
+Thankfully this won't be frequent and theoretically shouldn't happen at all. It's also easy to work around.
 
-When this happens, you can do any of the 3 following options:
+To avoid this issue, you have 3 options. Doing any one of them will suffice:
 
-1- Use `!(github.run_attempt > 1)` in an `if` condition so rerun of the same job doesn't use cache at all, and results in a clean build.
+1- Using `!(github.run_attempt > 1)` in an `if` condition so reruns of the same job don't use cache at all, and result in a clean build.
+This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions UI, and have a clean build.
 
 ```diff
       - name: Restore .build
@@ -382,7 +414,7 @@ When this happens, you can do any of the 3 following options:
 
 2- Use [this](https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy) simple workflow to delete all saved caches, so `Restore .build` step doesn't find anything to restore, and your build starts from a clean state.
 
-3- Manually delete the caches through GitHub Actions UI:
+3- Manually delete the relevant caches through GitHub Actions UI:
 
 ![Delete Cache In GitHub UI](delete-caches-in-github-ui.png)
 
