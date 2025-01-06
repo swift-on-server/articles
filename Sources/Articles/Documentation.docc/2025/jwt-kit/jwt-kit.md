@@ -1,4 +1,4 @@
-# Getting Started with Vapor's JWTKit 5: A Practical Introduction to JSON Web Tokens in Swift
+# A Practical Introduction to JWTs in Swift using JWTKit
 
 JWTKit is a library for working with JSON Web Tokens (JWT) in Swift. It provides a simple and easy-to-use API for creating, parsing, and validating JWTs. JWTs are a popular way to authenticate information (claims) between parties. JWTKit makes it easy to work with them in your Swift projects.
 
