@@ -47,7 +47,7 @@ targets: [
 
 In JWTKit everything revolves around the ``JWTKeyCollection`` object: a collection of keys that can be used to sign and verify JWTs. The declaration is simple, you can add this in your app's configuration code:
 
-<!-- @Snippet(path: "site/Snippets/JWTKit", slice: key_collection_init) -->
+<!-- @Snippet(path: "site/Snippets/jwt-kit", slice: key_collection_init) -->
 
 ```swift
 let keyCollection = JWTKeyCollection()
@@ -55,21 +55,20 @@ let keyCollection = JWTKeyCollection()
 
 Adding keys to the collection is also straightforward:
 
-<!-- @Snippet(path: "site/Snippets/JWTKit", slice: key_collection_add_hmac) -->
+<!-- @Snippet(path: "site/Snippets/jwt-kit", slice: key_collection_add_hmac) -->
 
 ```swift
 await keyCollection.add(hmac: "secret", digestAlgorithm: .sha256)
 ```
 
-This snippet adds an HMAC (Hash-based Message Authentication Code) key to the collection. HMAC works like a digital signature for our JWT, but with a simpler approach than asymmetric algorithms:
+This snippet adds an HMAC (Hash-based Message Authentication Code) key to the collection. HMAC is one of the most common algorithms used to sign JWTs. You can read about it [here](https://blog.boot.dev/cryptography/hmac-and-macs-in-jwts/), but in short, it works like this:
 1. First, the JWT's content (header and payload) is hashed using SHA-256
 2. Then, this hash is combined with our secret key to create a unique signature
 3. The same secret key must be used for both signing and verification (that's what makes it "symmetric")
-Think of it like a special seal on a letter - only someone with the same seal (our secret key) can verify if the letter is authentic. In this case, SHA-256 is our digest algorithm - it's responsible for creating that initial hash of our data. It's widely used because it provides a good balance of security and performance.
 
 > Important: Since HMAC uses the same key for signing and verification, you must keep this secret key secure and never expose it in client-side code or public repositories. Use environment variables or a secure secrets manager to store it.
 
-> You might be wondering why the `add` method is marked with `await`. This is because the method is asynchronous due to `JWTKeyCollection` being an actor. You can read more about actors in [Joannis' article](https://swiftonserver.com/structured-concurrency-and-shared-state-in-swift/#Actors%20and%20Isolation).
+> You might be wondering why the `add` method is marked with `await`. This is because the method is asynchronous due to `JWTKeyCollection` being an actor. You can read more about actors in <doc:structured-concurrency-and-shared-state-in-swift>.
 
 Other than HMAC, JWTKit also supports **ECDSA**, **EdDSA** and **RSA** keys. These are asymmetric signing algorithms, which means the key used to sign the JWT is different from the key used to verify it. This article won't go into which algorithm is best as each one has its own use case, however it's important to note that RSA is the least recommended of the listed ones due to different reasons. That's why JWTKit hides RSA keys behind an `Insecure` namespace.
 
@@ -77,7 +76,7 @@ Other than HMAC, JWTKit also supports **ECDSA**, **EdDSA** and **RSA** keys. The
 
 Once you have a ``JWTKeyCollection`` object, you can use it to "create" a JWT. Creating a JWT means signing the payload with a key, in this case one from the collection. The payload is the data we want to transmit securely:
 
-<!-- @Snippet(path: "site/Snippets/JWTKit", slice: payload_struct) -->
+<!-- @Snippet(path: "site/Snippets/jwt-kit", slice: payload_struct) -->
 
 ```swift
 struct TestPayload: JWTPayload {
@@ -95,14 +94,14 @@ struct TestPayload: JWTPayload {
 }
 ```
 
-In this example, we define a ``TestPayload`` struct that conforms to the ``JWTPayload`` protocol. This protocol requires us to implement the `verify(using:)` method, which includes optional additional validation logic that can be performed when creating the JWT. In this case, we're verifying that the token has not expired.
+In this example, we define a ``TestPayload`` struct that conforms to the ``JWTPayload`` protocol. This protocol requires us to implement the ``JWTPayload/verify(using:)`` method, which includes optional additional validation logic that can be performed when creating the JWT. In this case, we're verifying that the token has not expired.
 The properties of the struct are the claims we want to include in the JWT. JWTKit provides a number of built-in claims, such as ``ExpirationClaim`` and ``IssuerClaim``, which are commonly used in JWTs. JWTKit supports the [seven registered claims](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1) defined in the JWT specification, but you can also define custom claims if needed. 
 
-> Note: in the example, `CodingKeys` are defined to map Swift property names to the JSON keys used in the JWT. This means that in the JWT the expiration claim will be named `exp` and the issuer claim will be named `iss`, as per the JWT specification.
+> Note: in the example, ``CodingKeys`` are defined to map Swift property names to the JSON keys used in the JWT. This means that in the JWT the expiration claim will be named `exp` and the issuer claim will be named `iss`, as per the JWT specification.
 
 To create a JWT with this payload, you can create a new instance of the payload and use the key collection to sign it:
 
-<!-- @Snippet(path: "site/Snippets/JWTKit", slice: jwt_sign) -->
+<!-- @Snippet(path: "site/Snippets/jwt-kit", slice: jwt_sign) -->
 
 ```swift
 let payload = TestPayload(
@@ -115,11 +114,11 @@ let token = try await keyCollection.sign(payload)
 
 This will create a token that looks like the one we showed earlier. The token is now ready to be transmitted to the other party.
 
-## Validating a JWT
+## Verifying a JWT
 
-Once you receive a JWT, you can use the key collection to validate it. Validation involves verifying the signature of the token and checking the claims in the payload:
+Once you receive a JWT, you can use the key collection to verify it. Verification involves verifying the signature of the token and then checking the claims in the payload:
 
-<!-- @Snippet(path: "site/Snippets/JWTKit", slice: jwt_verify) -->
+<!-- @Snippet(path: "site/Snippets/jwt-kit", slice: jwt_verify) -->
 
 ```swift
 let verifiedPayload = try await keyCollection.verify(token, as: TestPayload.self)
@@ -176,7 +175,7 @@ router.post("login") { req async throws -> Response in
 }
 ```
 
-The `UserPayload` struct represents the claims we want to include in the JWT. In this example, we include the user's ID, an expiration claim, and a list of roles. The `verify` method checks that the token has not expired and that the user has the "admin" role. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
+The `UserPayload` struct represents the claims we want to include in the JWT. In this example, we include the user's ID, an expiration claim, and a list of roles. The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user has the "admin" role. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
 The `login` route receives the user's username and password, finds the user in the database, verifies the password, creates a JWT with the user's information, and signs it with the key collection. The token is then returned to the client.
 
 Next, we'll create a route that handles requests that require authentication. This route will validate the JWT in the request headers and return the requested data if the token is valid:
