@@ -1,10 +1,10 @@
 # Faster CI in GitHub Actions
 
-One of the biggest weak points of Swift is how slow the build system is. It can easily take anything between 10 to 40 minutes for a typical Swift CI to run depending on how big the project is, what build configuration you're using, and other factors.
+Swift has lots of power points, but the performance of the build system is not one of them. It can easily take anything between 10 to 30 minutes for a typical Swift CI to run depending on how big the project is, what build configuration you're using, how big your build machines are, and other factors.
 
 By optimizing your CI runtime, you'll not only save precious developer time, but you'll also either pay less for CI, or consume less of your GitHub Actions free quota.
 
-In this article, together we'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14 minutes 30 seconds in deployments, down to less than 4 minutes for tests CI, and 3 minutes for deployments. The bigger your project is, the bigger the gap will be.
+In this article, you'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14 minutes 30 seconds in deployments, down to less than 4 minutes for tests CI, and 3 minutes for deployments. The bigger your project is, the bigger the gap will be.
 
 ## The Problem
 
@@ -51,15 +51,15 @@ jobs:
 ```
 
 These CIs usually take 10 minutes in tests and 14 minutes 30 seconds for deployments in [Penny](https://github.com/vapor/penny-bot).
-That's too much time wasted waiting. How can we improve these CI times?
+That's too much time wasted waiting. How can you improve these CI times?
 
 ![Tests CI Initial State](tests-ci-initial.png)
 ![Deployment CI Initial State](deploy-ci-initial.png)
 
-## Speed Up Your CI Using actions/cache
+## Use caching
 
-Luckily for us, GitHub provides an [official cache action](https://github.com/actions/cache) that we can leverage in our CI.
-For this, we need to make sure we cache SwiftPM's `.build` directory after our builds have succeeded, so the next build can restore that same cache for faster build times.
+Luckily for you, GitHub provides an [official caching action](https://github.com/actions/cache) that you can leverage in our CI.
+For this, you need to make sure you cache SwiftPM's `.build` directory after your builds have succeeded, so the next build can restore those build artifacts for faster build times.
 It'll look like this in the tests CI:
 
 ```diff
@@ -82,36 +82,45 @@ It'll look like this in the tests CI:
 +          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
 ```
 
-In the "Restore .build" step, we're using the `restore` capability of `actions/cache`, and asking it to restore our previously-uploaded cache to the `.build` directory.
-The `key` is a way to uniquely identify caches and resolves to a string like `swiftpm-tests-build-Linux-f5ded47aafafe1f9f542e833a5f3dc01970bbaee`. If `actions/cache` finds and exact match for a cache with that name, it'll restore that cache for us. Otherwise it'll restore the latest cache that start with the `restore-keys`, which in our case will look like `swiftpm-tests-build-Linux-`. Note that `actions/cache` follows some branch protection rules so it's not vulnerable to cache poisoning attacks. That means that it'll only restore a cache if it was cached from the current branch or the primary branch of your repository.
+In the "Restore .build" step, you're using:
+* The `restore` capability of `actions/cache`, and asking it to restore your previously-uploaded cache to the `.build` path.
+* The `key` as a way to uniquely identify different caches. This resolves to a string like `swiftpm-tests-build-Linux-f5ded47aafafe1f9f542e833a5f3dc01970bbaee`.
+* The `restore-keys` as fallback. The action will restore the latest cache that starts with `restore-keys`, if no cache matching `key` was found.
 
-In the "Cache .build" step, you're also simply caching your `.build` directory, now that the build and tests process is over. This is so the next CI runs can use this cache.
-The `key` matches the one in the `key` of the "Restore .build" step, and with the `if` condition, we're trying to avoid spending time in the cache step when we've already found an exact cache key match in the "Restore .build" step. This is because `actions/cache` rejects cache entries with duplicate names, and does not have an update mechanism.
+Note that `actions/cache` follows some branch protection rules so it's not vulnerable to cache poisoning attacks.
+That means that it'll only restore a cache if it was cached from the current branch or the primary branch of your repository.
 
-The `${{ github.event.pull_request.base.sha || github.event.after }}` in the cache `key` will also resolve to the base branch commit SHA of your pull request, or to the current commit SHA if the actions is triggered on a push event and not in a pull request.
+After the tests process is over, you can cache the build artifacts to make sure the next CI run can leverage this fresh cache.
+
+So in the "Cache .build" step, you're caching your `.build` directory with the same key as the one in the "Restore .build" step.
+
+With the `if` condition, you're avoiding spending time in the cache step when you already found an **exact match** for the cache key in the "Restore .build" step. This is because `actions/cache` rejects cache entries with duplicate names, and does not have an update mechanism.
+This `if` statement will still evaluate to `false` if "Restore .build" had to fallback to `restore-keys` to find a cache.
+
+The `${{ github.event.pull_request.base.sha || github.event.after }}` in the cache `key` will also resolve to the base branch commit SHA of your pull request, or to the current commit SHA if the job run is triggered on a push event and not in a pull request.
 This makes sure your pull request will use a cache from the commit the pull request is based on, and push events will usually fallback to the latest cache that has been uploaded from the branch the CI is running on.
 
 Now let's see. How is your CI doing after adding these 2 steps?
 
 For the first run, don't expect any time improvements as there is simply no cache the action run can use.
 But if you re-run the CI job, you'll notice a big difference.
-Your tests CI runtime will drop to 6 minutes 30s, saving 3 minutes 30s.
-This is assuming both your restore and cache steps are run, which is not always true thanks to the if condition we have in "Cache .build" (`if: steps.restore-build.outputs.cache-hit != 'true'`). But in a lot of situations you'll still be restoring and uploading caches in the same CI run. For example every single time you push changes to a branch.
+Your tests CI runtime has drop to 6 minutes 30s, saving 3 minutes 30s.
+This is assuming both your restore and cache steps are run, which is not always true thanks to the if condition you have in "Cache .build". But in a lot of situations you'll still be restoring and uploading caches in the same CI run. For example every single time you push changes to a branch.
 
 ![Tests CI With Cache](tests-ci-with-cache.png)
 
-You've already saved at least 3 and a half minutes of time in your CI runtimes and that's great, but let's look closer.
-What's consuming the CI runtime now that you're using caching? Is it really taking 6 and a half minutes for the tests to run even after your efforts?
+You've already saved at least 3 and a half minutes of CI runtime, and that's great. But let's look closer.
+What's consuming the CI runtime now that you're using caching? Is it really taking 6 and a half minutes for the tests to run even after all your efforts?
 
 The answer is No. Your Swift tests runtime has dropped to less than 3 minutes, but if you look at the "Cache .build" step in the first run of your CI, you'll notice "Cache .build" is taking more than **2 and a half minutes** caching around **1.5 GB** worth of `.build` data, with the "Restore .build" step taking around **30 seconds** in the next run to restore the data.
 
 Wouldn't it be so nice if you could decrease the times spent caching? After all, only 3 minutes of your CI runtime is related to your test steps.
 
-## Speed Up Cache Steps Using zstd
+## Speed Up Caching With zstd
 
 As it turns out, `actions/cache` compresses the directories before uploading them to GitHub. This compression process will use `gzip` by default, and considering that `gzip` does not run in parallel, it can easily take 2 and a half minutes for a 1.5 GB `.build` directory to be compressed and uploaded.
 
-The hope is not lost though. The good news is that `actions/cache` will detect if it can use `zstd` instead of `gzip` for compression, and if `zstd` is available, it'll use that instead.
+The hope is not lost though. The good news is that `actions/cache` will detect if the `zstd` compression algorithm is available on the machine, and if so, it'll use that instead of `gzip`.
 For your purposes, `zstd` is much more performant than `gzip`, or even than `gzip`'s parallel implementation known as `pigz`, so you should leverage this feature.
 
 Simply install `zstd` on the machine before any calls to `actions/cache`, so `actions/cache` can detect and use it:
@@ -142,12 +151,13 @@ Take another look at your CI times. The whole CI is running in **4 minutes**, do
 It's thanks to "Restore .build" only taking half the previous time at **15 seconds**, and "Cache .build" taking **less than 30s**, down from the previous 2 minutes and a half.
 This 4 minutes of CI runtime includes **100s** of tests runtime as well! If your tests take less time than that, your CI will be even faster.
 
-## Separate Build Step From Test Runs
+## Decouple Build and Test-Run
 
 A logical problem in your current tests CI file is that if the tests fail, GitHub Actions will end the run and the "Cache .build" step won't be triggered.
-This will be an annoyance in new pull requests, specially if they're big. Your CI will need to rebuild a large portion of the project, which might substantially increase the CI time, up to the original 10 minutes of CI time you had. But when the tests result in a failure, the cache step will be skipped, and in the next run it'll need to build the whole changes all over again.
-You can fix this by separating the build step from the test-run step.
-It's simple. Build the app first, run the tests later after you're done caching the changes:
+This will be an annoyance in new pull requests, specially if they're big. Your CI will need to rebuild a large portion of the project, which might substantially increase the CI time, up to the original 10 minutes of CI time you had. But when the tests result in a failure, the cache step will be skipped, and in the next run it'll need to rebuild the whole changes of your pull request, all over again.
+
+You can fix this issue by separating the build from the test-run.
+It's simple. Build the app first, run the tests later after you're done caching the build artifacts:
 
 ```diff
       - name: Restore .build
@@ -176,17 +186,18 @@ It's simple. Build the app first, run the tests later after you're done caching 
 
 Looks good, right?
 
-Run the tests CI twice, to make sure the cache is updated for the second run.
+Run the tests CI twice to make sure the cache is updated for the second run.
 
 ![Tests CI With Separated Build Steps](tests-ci-separated-steps.png)
 
 You'll notice a big regression. Even when cache is available, the CI runtime has gone back up to around 9 minutes 15 seconds.
-Looking at runtimes of each step, you'll notice that the "Build package" step is only taking 1 minutes when a cache is available, but the "Run unit tests" is taking a whopping 7 minutes to run. It's as if the "Run unit tests" step is re-building majority of the project again.
-How can we overcome this issue?
+Looking at runtimes of each step, you'll notice that the "Build package" step is only taking 1 minute when a cache is available, but "Run unit tests" is taking a whopping 7 minutes to run. It's as if the "Run unit tests" step is re-building majority of the project again, ignoring the fact that you already built the package in an earlier step.
+
+How can you overcome this issue?
 
 ## Optimize Build Steps For Maximum Speed
 
-There are a few tricks we haven't utilized yet.
+There are a few tricks you haven't utilized yet.
 Change your "Build package" and "Run unit tests" to the following:
 
 ```yaml
@@ -213,21 +224,22 @@ Rerun the job once again after the cache is updated.
 Great! The CI runtime is down to **4 minutes 20 seconds**!
 You're almost back to the 4-minutes CI runtime mark, and only paying around 20 seconds of penalty to make sure the CI steps are more logical and account for unit tests failure in a better manner.
 
-But how did this happen? It's simple! You were not caching all you could in the "Build package" step.
-With the updated CI file, you're building the test targets as well thanks to the `--build-tests` flag, and also caching part of the code coverage work that the unit tests step would need to do, by using `--enable-code-coverage` in the build step. Note that you still need to use `--enable-code-coverage` in the unit-tests run step if you want to make sure code coverage is gathered in runtime of your unit tests as well.
-Finally you use `--skip-build` flag when running unit tests, because you know you've already filly build the project and there is no reason to do it twice.
+But how did this happen?
+
+With the updated CI file, you're building the test targets as well thanks to the `--build-tests` flag, and also caching part of the code coverage work that the unit tests step would need to do by using `--enable-code-coverage` in the build step. Note that you still need to use `--enable-code-coverage` in the unit-tests run step if you want to make sure code coverage is gathered in runtime of your unit tests as well.
+Finally you use `--skip-build` flag when running unit tests, because you know you've already built the whole project and there is no reason to do it twice.
 
 ## Cache Build Artifacts When Using A Dockerfile
 
 Your tests CI is pretty fast now and only takes around 4 minutes.
 But what about your deployments?
+
 While there are a lot of similarities in implementing caching in tests CI and deployment CI, there are still some differences.
 The project build in the deployment CI usually happens in a Dockerfile. While people have found ways around this, it's not easy to use `actions/cache` for files and folders that are in a Dockerfile.
 
-To make your Dockerfile cache-friendly, you need to pull out the build step our of the Dockerfile and move it to the deployment CI GitHub Actions file.
-For now, let's assume the build step is not happening in the Dockerfile, and the Dockerfile is only consuming the app that is already built.
+To make your Dockerfile cache-friendly, you need to pull out the build step out of the Dockerfile and move it to the deployment CI GitHub Actions file.
 
-Modify your Dockerfile like so. Note that the code-diff below is based on Vapor template's Dockerfile, which is also what Hummingbird template's Dockerfile is based on.
+Modify your Dockerfile like so. Note that the code-diff below is based on [Vapor template's Dockerfile](https://github.com/vapor/template/blob/main/Dockerfile), which is also what [Hummingbird template's Dockerfile](https://github.com/hummingbird-project/template/blob/main/Dockerfile) is based on.
 If you've changed your main executable's name from the default `App` to something else, make sure you substitute `App` with that name in the Dockerfile below:
 
 ```diff
@@ -307,7 +319,7 @@ RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
 RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
 ```
 
-You're no longer building your app in the Dockerfile. You simply copy the whole repository to the Dockerfile like before, but you expect the repository to already contain the build artifacts and the built executable.
+You're no longer building your app in the Dockerfile. You simply copy the whole repository to the Dockerfile like before, but you expect the repository to already contain the build artifacts, including the executable.
 
 Let's not let down your Dockerfile! You need to modify the CI deployment file to not only properly build the project, but also to use caching like you've learned before.
 You'll also need to add 2 extra things to the CI file. If you've changed your main executable's name from the default `App` to something else, make sure you substitute `App` with that name in the deployment file below as well:
@@ -342,6 +354,8 @@ jobs:
 +        run: |
 +          apt-get update -y
 +          apt-get install -y libjemalloc-dev
++
++          # Build the application, with optimizations, with static linking, and using jemalloc
 +          swift build \
 +            -c release \
 +            --product App \
@@ -389,10 +403,9 @@ On top of those caching steps, you also need to make sure to:
 * Instruct GitHub Actions to run the CI file in a `swift:6.0-noble` container, instead of `ubuntu-latest`.
 * Slightly modify the caching key to make sure your deployments don't go using your tests' caches!
   * You've simply modified `swiftpm-tests-build` to `swiftpm-deploy-build` in the cache keys above, and that's enough.
-* Manually install Docker since swift images don't contain Docker.
+* Manually install Docker since Swift images don't contain Docker.
 
-The "Build App" step is mostly a copy of what was in the Dockerfile.
-It installs jemalloac to be able to use it in the app compilation, and in the last line of the step, it makes sure to respect your current `Package.resolved` file instead of randomly updating your packages.
+The "Build App" step is mostly a copy of what was in the Dockerfile. It installs jemalloac to be able to use it in the app compilation, and in the last line of the step, it makes sure to respect your current `Package.resolved` file instead of randomly updating your packages.
 
 Rerun the deployment CI twice to make sure the cache is populated.
 
@@ -409,7 +422,7 @@ Thankfully this won't be frequent and theoretically shouldn't happen at all. It'
 
 To avoid this issue, you have 3 options. Doing any one of them will suffice:
 
-1- Using `!(github.run_attempt > 1)` in an `if` condition so reruns of the same job don't use cache at all, and result in a clean build.
+1- Using `!(github.run_attempt > 1)` in an `if` condition so reruns of the same job don't try to restore any caches at all, and result in a clean build.
 This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions UI, and have a clean build.
 
 ```diff
@@ -423,7 +436,7 @@ This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions U
           restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
 ```
 
-2- Use [this](https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy) simple workflow to delete all saved caches, so `Restore .build` step doesn't find anything to restore, and your build starts from a clean state.
+2- Using [this](https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy) workflow to delete all saved caches, so `Restore .build` step doesn't find anything to restore, and your build starts from a clean state.
 
 3- Manually delete the relevant caches through GitHub Actions UI:
 
