@@ -114,6 +114,10 @@ The roles claim is a custom claim:
 This is a simple struct that conforms to the ``JWTClaim`` protocol. The ``value`` property is the value of the claim, which in this case is a list of roles.
 Next, we'll create a route that handles user logins and returns a JWT:
 
+@Snippet(path: "site/Snippets/jwt-kit", slice: auth_user_payload)
+
+The `UserPayload` struct represents the claims we want to include in the JWT. In this example, we include the user's ID, an expiration claim, and a list of roles. The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user has the "admin" role. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
+
 ```swift
 router.post("login") { req async throws -> Response in
     let user = User.find(username: req.body.username) // Find user by username, in a DB for example
