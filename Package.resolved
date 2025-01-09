@@ -1,5 +1,5 @@
 {
-  "originHash" : "bc7e7da478a806e0f7cbe377f7686d6279b8f12a875ce24603298eac157fefe8",
+  "originHash" : "39ee378a5452b7ecbf42ffb8e850cc3bb68bdddb2394e39ac26615ba789f3c5c",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -92,6 +92,15 @@
       }
     },
     {
+      "identity" : "jwt-kit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/vapor/jwt-kit.git",
+      "state" : {
+        "revision" : "6f745e91e2422608fe14c9a66ee3826cb661e2a6",
+        "version" : "5.1.1"
+      }
+    },
+    {
       "identity" : "mongokitten",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/orlandos-nl/MongoKitten.git",
@@ -103,7 +112,7 @@
     {
       "identity" : "swift-algorithms",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-algorithms.git",
+      "location" : "https://github.com/apple/swift-algorithms",
       "state" : {
         "revision" : "f6919dfc309e7f1b56224378b11e28bab5bccc42",
         "version" : "1.2.0"
@@ -112,7 +121,7 @@
     {
       "identity" : "swift-argument-parser",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-argument-parser.git",
+      "location" : "https://github.com/apple/swift-argument-parser",
       "state" : {
         "revision" : "41982a3656a71c768319979febd796c6fd111d5c",
         "version" : "1.5.0"
@@ -143,6 +152,15 @@
       "state" : {
         "revision" : "cd142fd2f64be2100422d658e7411e39489da985",
         "version" : "1.2.0"
+      }
+    },
+    {
+      "identity" : "swift-certificates",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-certificates.git",
+      "state" : {
+        "revision" : "1fbb6ef21f1525ed5faf4c95207b9c11bea27e94",
+        "version" : "1.6.1"
       }
     },
     {
