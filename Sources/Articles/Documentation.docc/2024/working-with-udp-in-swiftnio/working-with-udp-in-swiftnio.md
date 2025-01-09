@@ -21,13 +21,13 @@ In order to start accepting packets, bind a UDP socket to a port:
 1. First, create a ``DatagramBootstrap`` to open a UDP socket.
 2. Next, bind the socket to a port using the `bind` method.
 3. Before completing the setup, transform the created ``Channel`` by wrapping it in a ``NIOAsyncChannel``
-4. Unlike TCP, a UDP server does not receive _connections_. It receives an ``AddressedEnvelope`` containing a ``ByteBuffer`` and the sender's ``SocketAddress``.
+4. Unlike TCP, a UDP server does not receive _connections_. It receives an ``AddressedEnvelope`` containing a ``ByteBuffer`` and the sender's ``NIOCore/SocketAddress``.
 
 Now that you've bound the socket, you can start receiving packets.
 
 ### Receiving and Sending Packets
 
-First, start observing the socket using ``NIOAsyncChannel/executeThenClose(_:) [2G196]``. This method will provide an `inbound` and `outbound` argument.
+First, start observing the socket using ``NIOAsyncChannel/executeThenClose(_:) ((NIOAsyncChannelInboundStream<Inbound>, NIOAsyncChannelOutboundWriter<Outbound>) -> Result)``. This method will provide an `inbound` and `outbound` argument.
 
 Inbound is a stream of incoming packets, whereas outbound is a writer that you can write packets to.
 

@@ -146,7 +146,7 @@ Create a markdown article named `My article.md` in the `docs.docc` directory.
 
 In the example above, we have specified the Snippet to include by `path` identity.
 
-Despite its naming, the `path` syntax is not a file path. The first component is the name of the package **as specified by the ``PackageDescription/Package/name`` field in the manifest**. The second component is always the string `Snippets`. The third component is the Snippet ID, which is the name of the Snippet file without the `.swift` extension.
+Despite its naming, the `path` syntax is not a file path. The first component is the name of the package **as specified by the `name` field in the manifest**. The second component is always the string `Snippets`. The third component is the Snippet ID, which is the name of the Snippet file without the `.swift` extension.
 
 If the Snippet ID contains special characters, you should pass the ID as-is, without replacing any characters.
 

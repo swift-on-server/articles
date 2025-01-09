@@ -1,6 +1,6 @@
 # Using Hummingbird's Request Context
 
-[Hummingbird](https://hummingbird.codes) introduces a new feature that is essential in how it integrates with other libraries: the ``RequestContext``. 
+[Hummingbird](https://hummingbird.codes) introduces a new feature that is essential in how it integrates with other libraries: the ``RequestContext``.
 
 This article explains what they're used for, and how they can help you build statically checked and performant applications.
 
@@ -16,7 +16,7 @@ In addition, a context can specify a ``RequestDecoder`` and ``ResponseEncoder``.
 
 While the en- and decoder usually focus on one content type such as JSON, it's also possible for a context to support multiple content types.
 
-Finally, a request specifies ``RequestContext/maxUploadSize``, which has a sensible default value. This specifies the maximum amount of data that Hummingbird may send to a ``RequestDecoder`` before rejecting the request.
+Finally, a request specifies ``RequestContext/maxUploadSize [requirement]``, which has a sensible default value. This specifies the maximum amount of data that Hummingbird may send to a ``RequestDecoder`` before rejecting the request.
 
 ## Custom Contexts
 

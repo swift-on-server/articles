@@ -32,13 +32,13 @@ let package = Package(
 
 Before the actual implementation, it is important to understand the basic building blocks of the Service Lifecycle library.
 
-Long-running work should be modeled as services that implement the ``Service`` protocol. This protocol requires only one function: a simple asynchronous throwing ``run()`` method.
+Long-running work should be modeled as services that implement the ``Service`` protocol. This protocol requires only one function: a simple asynchronous throwing ``Service/run()`` method.
 
 The ``ServiceGroup`` is used to orchestrate multiple services. A child task is spawned for each service, and the respective run method is called in the child task. Additionally, signal listeners are set up for the configured signals, triggering a graceful shutdown for each service.
 
-A ``ServiceGroup`` manages the execution of multiple services, handles signal processing, and signals graceful shutdowns to the services. 
+A ``ServiceGroup`` manages the execution of multiple services, handles signal processing, and signals graceful shutdowns to the services.
 
-While a service is typically a long-running task, it can also be a simple task that returns immediately. By default, if one service returns or throws an error, the entire group is canceled. This behavior can be customized by providing a custom ``successTerminationBehavior`` parameter for the service group, as detailed [here](https://swiftpackageindex.com/swift-server/swift-service-lifecycle/main/documentation/servicelifecycle/how-to-adopt-servicelifecycle-in-applications#Customizing-the-behavior-when-a-service-returns-or-throws).
+While a service is typically a long-running task, it can also be a simple task that returns immediately. By default, if one service returns or throws an error, the entire group is canceled. This behavior can be customized by providing a custom ``ServiceGroupConfiguration/ServiceConfiguration/successTerminationBehavior`` parameter for the service group, as detailed [here](https://swiftpackageindex.com/swift-server/swift-service-lifecycle/main/documentation/servicelifecycle/how-to-adopt-servicelifecycle-in-applications#Customizing-the-behavior-when-a-service-returns-or-throws).
 
 The following example illustrates a simple service and a service group with customized termination behavior:
 
@@ -88,7 +88,7 @@ struct Application {
 
 ## Graceful shutdown and cancellation signals
 
-Rather than setting a custom termination behavior, it is also possible to wait for a cancellation signal and then shut down service resources when that event occurs. The ``gracefulShutdown()`` function is designed to suspend the caller until a graceful shutdown is initiated. 
+Rather than setting a custom termination behavior, it is also possible to wait for a cancellation signal and then shut down service resources when that event occurs. The ``gracefulShutdown()`` function is designed to suspend the caller until a graceful shutdown is initiated.
 
 A graceful shutdown is when an application closes down in an orderly way. Instead of stopping suddenly, it finishes its current tasks and cleans up resources like open files or network connections. This matters because it prevents data loss, avoids corruption, and ensures that the system remains stable and reliable. By shutting down gracefully, applications can stop safely without causing problems for users or other systems they interact with.
 
@@ -101,10 +101,10 @@ struct BasicService: Service {
 
     func run() async throws {
         print("Start - basic service!")
-       
-        // 1. 
+
+        // 1.
         try? await gracefulShutdown()
-        
+
         print("Shutdown - basic service!")
     }
 }
@@ -155,9 +155,9 @@ import AsyncHTTPClient
 
 // 1.
 actor AsyncHTTPClientService: Service {
-    
+
     var httpClient: HTTPClient
-    
+
     init() {
         self.httpClient = .init(
             eventLoopGroupProvider: .singleton
@@ -166,21 +166,21 @@ actor AsyncHTTPClientService: Service {
 
     func run() async throws {
         try? await gracefulShutdown()
-        
+
         print("Shutting down http client service...")
         try await httpClient.shutdown()
     }
 }
 
 actor PingService: Service {
-    
+
     let httpClientService: AsyncHTTPClientService
-    
+
     // 2.
     init(httpClientService: AsyncHTTPClientService) {
         self.httpClientService = httpClientService
     }
-    
+
     func run() async throws {
         // 3.
         try await withGracefulShutdownHandler {
@@ -188,7 +188,7 @@ actor PingService: Service {
             // 4.
             repeat {
                 print("Ping #\(i) - apple.com")
-                
+
                 let request = HTTPClientRequest(
                     url: "https://apple.com/"
                 )
@@ -243,7 +243,7 @@ struct Application {
                 logger: .init(label: "service-group")
             )
         )
-        
+
         try await serviceGroup.run()
     }
 }
@@ -251,7 +251,7 @@ struct Application {
 
 1. Defines an `AsyncHTTPClientService` actor that initializes an HTTP client and implements the run method to handle graceful shutdown by shutting down the HTTP client.
 2. Defines a `PingService` actor that relies on the `AsyncHTTPClientService` for making HTTP requests.
-3. Uses ``withGracefulShutdownHandler`` to handle graceful shutdown within the `PingService` actor's run method.
+3. Uses ``withGracefulShutdownHandler(isolation:operation:onGracefulShutdown:)`` to handle graceful shutdown within the `PingService` actor's run method.
 4. Initiates a loop for sending HTTP requests to apple.com and prints the result.
 5. Executes an HTTP request asynchronously using the AsyncHTTPClientService and handles the response.
 6. Delays execution for one second before the next iteration of the loop.
