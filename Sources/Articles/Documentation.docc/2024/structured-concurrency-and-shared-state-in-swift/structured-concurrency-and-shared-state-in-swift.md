@@ -36,7 +36,7 @@ An actor's isolation is inherited by its properties and methods. Actor Isolation
 
 @Snippet(path: "site/Snippets/shared-state", slice: "unownedExecutor")
 
-You can create your own ``SerialExecutor`` for use with your actors. SwiftNIO's EventLoop already has a ``EventLoop/executor [59PH6]`` property that you can use. ``/Dispatch``'s ``DispatchQueue`` can be adapted easily as well.
+You can create your own ``SerialExecutor`` for use with your actors. SwiftNIO's EventLoop already has a ``EventLoop/executor [requirement: false]`` property that you can use. ``/Dispatch``'s ``DispatchQueue`` can be adapted easily as well.
 
 Since ``Actor/unownedExecutor`` is not a static member of an actor, an actor's static properties can _not be isolated_ by the actor.
 

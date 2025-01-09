@@ -27,7 +27,7 @@ Now that you've bound the socket, you can start receiving packets.
 
 ### Receiving and Sending Packets
 
-First, start observing the socket using ``NIOAsyncChannel/executeThenClose(_:) [2G196]``. This method will provide an `inbound` and `outbound` argument.
+First, start observing the socket using ``NIOAsyncChannel/executeThenClose(_:) ((NIOAsyncChannelInboundStream<Inbound>, NIOAsyncChannelOutboundWriter<Outbound>) -> Result)``. This method will provide an `inbound` and `outbound` argument.
 
 Inbound is a stream of incoming packets, whereas outbound is a writer that you can write packets to.
 

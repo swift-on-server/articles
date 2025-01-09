@@ -45,9 +45,9 @@ In the `main.swift` file, import the AsyncHTTPClient library and initialize an H
 2. The ``HTTPClient/Configuration`` parameter is set, defining various aspects of the ``HTTPClient``'s behavior.
 3. ``HTTPClient/Configuration/RedirectConfiguration`` is specified to follow redirects up to a maximum of 3 times and disallow redirect cycles.
 4. Set ``HTTPClient/Configuration/Timeout``s for different phases of the HTTP request process, such as connection establishment, reading, and writing.
-5. Cleanup by calling the ``HTTPClient/shutdown() [96AYW]`` method on the HTTPClient instance.
+5. Cleanup by calling the ``HTTPClient/shutdown() -> ()`` method on the HTTPClient instance.
 
-Please be aware that it is essential to properly terminate the HTTP client after executing requests. Forgetting to invoke the ``HTTPClient/shutdown() [96AYW]`` method may cause the library to issue a warning about a potential memory leak when compiling the application in debug mode.
+Please be aware that it is essential to properly terminate the HTTP client after executing requests. Forgetting to invoke the ``HTTPClient/shutdown() -> ()`` method may cause the library to issue a warning about a potential memory leak when compiling the application in debug mode.
 
 
 ## Performing HTTP requests

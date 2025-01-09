@@ -82,7 +82,7 @@ MongoKitten supports filtering and sorting on most queries.
 
 @Snippet(path: "site/Snippets/mongokitten-basics", slice: "find-by-author")
 
-The ``MongoCollection.find(_:) [7HX5V]`` method returns a ``FindQueryBuilder``, a type of ``MongoCursor`` that allows you to chain more methods.
+The ``MongoCollection.find(_:) (Query)`` method returns a ``FindQueryBuilder``, a type of ``MongoCursor`` that allows you to chain more methods.
 
 ### Sorting and Limiting
 
@@ -92,7 +92,7 @@ The **find** method accepts one argument, a filter. By providing the find filter
 
 Then, chain the following methods:
 
-- ``FindQueryBuilder.sort(_:) [5UP4H]`` allows you to sort the results by one or more fields.
+- ``FindQueryBuilder.sort(_:) (Sorting)`` allows you to sort the results by one or more fields.
 - ``FindQueryBuilder.limit(_:)`` allows you to limit the number of results returned.
 
 ### Understanding BSON
