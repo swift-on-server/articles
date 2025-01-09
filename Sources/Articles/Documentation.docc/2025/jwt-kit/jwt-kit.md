@@ -103,32 +103,11 @@ This flow allows you to securely transmit information between the client and ser
 Let's put this into practice with a simple example. This example uses Swift pseudo-code to demonstrate the flow, without using a specific web framework. You can adapt this code to work with your preferred web framework.
 First, we'll create a route that handles the login request. This route will receive the user's information, create a JWT with that information, and sign it with the key collection:
 
+@Snippet(path: "site/Snippets/jwt-kit", slice: auth_user_payload)
+
+The `UserPayload` struct represents the claims we want to include in the JWT. In this example, we include the user's ID, an expiration claim, and a list of roles. The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user has the "admin" role. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
+
 ```swift
-struct UserPayload: JWTPayload {
-    let userID: UUID
-    let expiration: ExpirationClaim
-    let roles: [String]
-
-    enum CodingKeys: String, CodingKey {
-        case userID = "user_id"
-        case expiration = "exp"
-        case roles
-    }
-
-    func verify(using key: some JWTAlgorithm) throws {
-        try expiration.verifyNotExpired()
-        guard roles.contains("admin") else {
-            throw JWTError.claimVerificationFailure(name: "roles", reason: "User is not an admin")
-        }
-    }
-
-    init(from user: User) {
-        self.userID = user.id
-        self.expiration = .init(value: .init(timeIntervalSinceNow: 3600)) // Token expires in 1 hour
-        self.roles = user.roles
-    }
-}
-
 router.post("login") { req async throws -> Response in
     let user = User.find(username: req.body.username) // Find user by username, in a DB for example
     try user.verifyPassword(req.body.password)
@@ -138,7 +117,6 @@ router.post("login") { req async throws -> Response in
 }
 ```
 
-The `UserPayload` struct represents the claims we want to include in the JWT. In this example, we include the user's ID, an expiration claim, and a list of roles. The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user has the "admin" role. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
 The `login` route receives the user's username and password, finds the user in the database, verifies the password, creates a JWT with the user's information, and signs it with the key collection. The token is then returned to the client.
 
 Next, we'll create a route that handles requests that require authentication. This route will validate the JWT in the request headers and return the requested data if the token is valid:

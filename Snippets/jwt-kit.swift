@@ -39,3 +39,33 @@ let verifiedPayload = try await keyCollection.verify(
     as: TestPayload.self
 )
 // snippet.end
+
+// snippet.auth_user_payload
+struct UserPayload: JWTPayload {
+    let userID: UUID
+    let expiration: ExpirationClaim
+    let roles: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case userID = "user_id"
+        case expiration = "exp"
+        case roles
+    }
+
+    func verify(using key: some JWTAlgorithm) throws {
+        try expiration.verifyNotExpired()
+        guard roles.contains("admin") else {
+            throw JWTError.claimVerificationFailure(
+                name: "roles",
+                reason: "User is not an admin"
+            )
+        }
+    }
+
+    init(from user: User) {
+        self.userID = user.id
+        self.expiration = .init(value: .init(timeIntervalSinceNow: 3600))  // Token expires in 1 hour
+        self.roles = user.roles
+    }
+}
+// snippet.end
