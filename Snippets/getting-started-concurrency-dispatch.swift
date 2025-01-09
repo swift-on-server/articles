@@ -27,7 +27,7 @@ enum NetworkError: Error {
 // snippet.fetchImageCallback
 func fetchImage(
     at url: URL,
-    completion: @escaping (Result<UIImage, Error>) -> Void
+    completion: @Sendable @escaping (Result<UIImage, Error>) -> Void
 ) {
     URLSession.shared.dataTask(with: url) { data, response, error in
         if let error {

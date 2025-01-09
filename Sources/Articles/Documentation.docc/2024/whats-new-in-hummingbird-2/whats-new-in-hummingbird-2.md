@@ -1,14 +1,14 @@
 # What's new in Hummingbird 2?
 
-Hummingbird is a lightweight, flexible HTTP server framework written in Swift. The work on the second major version started last year and the first alpha version was tagged on the 22th of January, 2024. There are quite a lot of significant changes and under the hood improvements. It seems like the new APIs are mostly settled down at this point, so this is a great opportunity to introduce HB2. Let's dive in.
+Hummingbird is a lightweight, flexible HTTP server framework written in Swift. The work on the second major version started halfway through 2023 and the first alpha version was tagged on the 22th of January, 2024. There are quite a lot of significant changes and under the hood improvements. With 2.0 being released, this is a great opportunity to read up on it!
 
 ## Swift concurrency
 
-Hummingbird 2 was built using the modern Swift concurrency APIs. Most of the NIO event loop references are replaced with async / await functions and calls. Structured concurrency is present all around the codebase and the project components, such as ``Request``, are thread safe thanks to the ``Sendable`` conformance. 
+Hummingbird 2 was built using the modern Swift concurrency APIs. Most of the NIO event loop references are replaced with async / await functions and calls. Structured concurrency is present all around the codebase and the project components, such as ``Request``, are thread safe thanks to the ``Sendable`` conformance.
 
 Before the async / await feature adoption, some components had a `HBAsync` prefix. Those are now removed from the v2 library. For example `HBAsyncMiddleware` is now ``MiddlewareProtocol`` or `HBAsyncResponder` is simply called ``HTTPResponder``.
 
-It is worth to mention that HB2 is prepared for Swift 6, the project also compiles against the experimental `StrictConcurrency=complete` feature flag. 
+It is worth to mention that HB2 is prepared for Swift 6, the project also compiles against the experimental `StrictConcurrency=complete` feature flag.
 
 ## Swift service lifecycle v2
 
@@ -24,7 +24,7 @@ The HummingbirdJobs framework can be used to push work onto a queue, so that is 
 
 ## Connection pools
 
-The custom connection pool implementation was removed from the framework. Previously, this component offered connection pooling for PostgreSQL. Since [PostgresNIO](https://github.com/vapor/postgres-nio) has built-in support, there's no need for it anymore inside the HB framework. 
+The custom connection pool implementation was removed from the framework. Previously, this component offered connection pooling for PostgreSQL. Since [PostgresNIO](https://github.com/vapor/postgres-nio) has built-in support, there's no need for it anymore inside the HB framework.
 
 ## HTTP improvements
 
@@ -34,15 +34,13 @@ Hummingbird 2 takes advantage of the brand new [Swift HTTP Types library](https:
 
 Hummingbird 2 features a brand new routing library, based on Swift result builders. This is a standalone project, the old route building mechanism still works, but if you prefer result builders you can try the new method by importing this lib.
 
-Here's a little sneak-peak about the usage of the new ``RouterBuilder`` object:
+Here's a little peak into the usage of the new ``RouterBuilder`` object:
 
 @Snippet(path: "site/Snippets/hummingbird-2-routerbuilder")
 
-There are more examples available inside the Hummingbird [RouterTests](https://github.com/hummingbird-project/hummingbird/blob/2.x.x/Tests/HummingbirdRouterTests/RouterTests.swift) file. If you are curious about the new route builder tool, that's a good place to get started, since there are no official docs just yet.
-
 ## Generic request context
 
-The biggest change to the framework is definitely the introduction of the generic request context. Hummingbird 2.0 separates contextual objects from the `Request` type and users can define custom properties as custom `RequestContext` protocol implementations. 
+The biggest change to the framework is definitely the introduction of the generic request context. Hummingbird 2.0 separates contextual objects from the `Request` type and users can define custom properties as custom `RequestContext` protocol implementations.
 
 The request context is associated with the reworked ``Router``, which a generic class, featuring a _Context_ type. The `BasicRequestContext` type is the default _Context_ implementation for the _Router_. The request decoder and encoder defaults to a JSON-based solution when using the base context. You can provide a custom decoder through a custom router context.
 
@@ -64,7 +62,7 @@ let package = Package(
         .macOS(.v14),
     ],
     dependencies: [
-        .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0-rc.1"),
+        .package(url: "https://github.com/hummingbird-project/hummingbird.git", from: "2.0.0"),
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.4.0"),
     ],
     targets: [
@@ -120,7 +118,7 @@ Create the application instance using the `buildApplication` function.
 4. Add routes using the custom controller to the `api` route group
 5. Build the _Application_ instance using the router and the configuration
 
-Inside the main entrypoint you can start the server by calling the ``Application.runService()`` method:
+Inside the main entrypoint you can start the server by calling the ``Application.runService(gracefulShutdownSignals:)`` method:
 
 @Snippet(path: "site/Snippets/hummingbird-2", slice: "run")
 
@@ -129,10 +127,10 @@ The route handlers in the `MyController` struct can access of the custom context
 @Snippet(path: "site/Snippets/hummingbird-2", slice: "controller")
 
 1. Register route handlers using the router group
-2. Hummingbird is thread-safe, so every route handler should be marked  with `@Sendable` to propagate these thread-safety checks. 
-3. It is possible to access both the request and the context in each route handler. 
+2. Hummingbird is thread-safe, so every route handler should be marked  with `@Sendable` to propagate these thread-safety checks.
+3. It is possible to access both the request and the context in each route handler.
 
-As you can see there are quite a lot of changes in the latest version of the Hummingbird framework. The final release date is still unknown, but it is expected to happen within a few months, after the alpha & beta period ends. 
+Beyond these changes, there are many more in the new Hummingbird 2 release. We're excited for you to try it out!
 
-If have questions about Hummingbird, feel free to join the following [Discord server](https://discord.gg/fkN7FC7QJk). You can also get some inspiration from the official [Hummingbird examples](https://github.com/hummingbird-project/hummingbird-examples) repository. 
+If have questions about Hummingbird, feel free to join the following [Discord server](https://discord.gg/fkN7FC7QJk). You can also get some inspiration from the official [Hummingbird examples](https://hummingbird.codes/examples).
 
