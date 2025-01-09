@@ -11,12 +11,57 @@
       }
     },
     {
+      "identity" : "bson",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/orlandos-nl/BSON.git",
+      "state" : {
+        "revision" : "d918a5c24d875deeb6bcc9082a68bd097ac24d92",
+        "version" : "8.1.2"
+      }
+    },
+    {
       "identity" : "compress-nio",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/adam-fowler/compress-nio.git",
       "state" : {
         "revision" : "459a803a4e38718d94d64f2b31e83f01d934f324",
         "version" : "1.4.0"
+      }
+    },
+    {
+      "identity" : "dnsclient",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/orlandos-nl/DNSClient.git",
+      "state" : {
+        "revision" : "9b3369164d89d37feb11bfa6405502367480fee1",
+        "version" : "2.4.3"
+      }
+    },
+    {
+      "identity" : "grpc-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/grpc/grpc-swift.git",
+      "state" : {
+        "revision" : "432c955d9781bfb4c20c813de042bc098d2277cf",
+        "version" : "2.0.0-alpha.1"
+      }
+    },
+    {
+      "identity" : "grpc-swift-nio-transport",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/grpc/grpc-swift-nio-transport",
+      "state" : {
+        "revision" : "0d1c61a501683a2acf5810b1ce1230e993c87b3f",
+        "version" : "1.0.0-alpha.1"
+      }
+    },
+    {
+      "identity" : "grpc-swift-protobuf",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/grpc/grpc-swift-protobuf",
+      "state" : {
+        "revision" : "424a4d8bd6f0c97500517b827a9d0e2c6a1df924",
+        "version" : "1.0.0-alpha.1"
       }
     },
     {
@@ -44,6 +89,15 @@
       "state" : {
         "revision" : "11b4b5235e03f07511e4bb8e22204d35c5691120",
         "version" : "2.3.0"
+      }
+    },
+    {
+      "identity" : "mongokitten",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/orlandos-nl/MongoKitten.git",
+      "state" : {
+        "revision" : "6654e801833d5dab3c04af065646ba727f9542e9",
+        "version" : "7.9.7"
       }
     },
     {
@@ -215,6 +269,15 @@
       "state" : {
         "revision" : "0a5bc04095a675662cf24757cc0640aa2204253b",
         "version" : "1.0.2"
+      }
+    },
+    {
+      "identity" : "swift-protobuf",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-protobuf.git",
+      "state" : {
+        "revision" : "ebc7251dd5b37f627c93698e4374084d98409633",
+        "version" : "1.28.2"
       }
     },
     {

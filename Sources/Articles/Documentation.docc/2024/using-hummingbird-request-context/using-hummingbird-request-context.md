@@ -2,13 +2,13 @@
 
 [Hummingbird](https://hummingbird.codes) introduces a new feature that is essential in how it integrates with other libraries: the ``RequestContext``.
 
-This is a protocol that defines a context that is created for each request that passes through your Hummingbird server. This context can be used to store and retrieve properties that are relevant to the request.
-
 This article explains what they're used for, and how they can help you build statically checked and performant applications.
 
 ## The Core
 
-In the bottom-line, it's a struct that conforms to the ``RequestContext`` protocol. This protocol has one main requirement: It needs store a ``CoreRequestContextStorage``.
+This protocol is implemented by metadata containers. Alongside each ``Request``, Hummingbird creates one instance of this Context. This context functions as a metadata container, and stores properties alongside the request.
+
+The ``RequestContext`` protocol has one main requirement: It needs store a ``CoreRequestContextStorage``.
 
 The CoreRequestContextStorage is a container that the framework uses to store properties _it needs_. While the amount of properties are limited right now, this allows the framework to add more features in the future without breaking your code.
 
@@ -20,7 +20,7 @@ Finally, a request specifies ``RequestContext/maxUploadSize [requirement]``, whi
 
 ## Custom Contexts
 
-Hummingbird provides a very simlpe context called ``BasicRequestContext``, which is used by default. It's a good starting point for applications, but most applications need custom contexts.
+Hummingbird provides a very simple context called ``BasicRequestContext``, which is used by default. It's a good starting point for applications, but most applications need custom contexts.
 
 To create a custom context, create a struct that conforms to the ``RequestContext`` protocol. This struct stores any properties related to the request.
 
@@ -48,7 +48,7 @@ Middleware are powerful tools that allow intercepting requests and responses, an
 
 In Hummingbird, the middleware system is also designed with contexts in mind. When a request is received, the context is created and along between middleware. The middleware can then modify the context as needed.
 
-First, create a middleware type that conforms to the ``RouterMiddleware`` protocol. Then, inject properties into the context from the ``MiddlewareProtocol/handle(_:context:next:)`` method.
+First, create a middleware type that conforms to the ``RouterMiddleware`` protocol. Then, modify the properties in the context from the ``MiddlewareProtocol/handle(_:context:next:)`` method.
 
 While middleware can specify a `typealias` to constrain to a specific context, it's also possible make a middleware generic.
 

@@ -5,4 +5,6 @@
 /.build.ssgc
 /.ssgc
 /Sources/**/*.html
+/.build.ssgc
+/.index-build
 docc
