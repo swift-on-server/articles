@@ -1,7 +1,8 @@
-.DS_Store
-.swiftpm
-.vscode
-.build
-Sources/**/*.html
+/.DS_Store
+/.swiftpm
+/.vscode
+/.build
+/.build.ssgc
+/.ssgc
+/Sources/**/*.html
 docc
-.build.ssgc

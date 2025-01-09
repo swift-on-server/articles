@@ -207,7 +207,7 @@ extension DelayedElementEmitter {
     }
 }
 // snippet.end
-// snipet.delayedprint
+// snippet.delayedprint
 let delayedEmitter = DelayedElementEmitter(
     elements: [1, 2, 3, 4, 5],
     delay: .seconds(1)
