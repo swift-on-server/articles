@@ -20,7 +20,7 @@ The [HummingbirdCore](https://github.com/hummingbird-project/hummingbird-core) r
 
 ## Jobs framework updates
 
-The HummingbirdJobs framework can be used to push work onto a queue, so that is  processed outside of a request. Job handlers were restructured to use ``TaskGroup`` and conform to the ``Service`` protocol from the Swift service lifecycle framework. A ``JobQueue`` can also define it's own ``JobID`` type, which helps when integrating with various database/driver implementations.
+The HummingbirdJobs framework can be used to push work onto a queue, so that is  processed outside of a request. Job handlers were restructured to use ``TaskGroup`` and conform to the ``Service`` protocol from the Swift service lifecycle framework. A ``JobQueue`` can also define it's own ``JobQueueDriver/JobID`` type, which helps when integrating with various database/driver implementations.
 
 ## Connection pools
 

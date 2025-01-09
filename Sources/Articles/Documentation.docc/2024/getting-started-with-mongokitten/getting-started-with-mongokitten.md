@@ -46,9 +46,9 @@ Let's create our first connection:
 
 For our social network, we'll create a Post model using the ``Codable`` protocol:
 
-@Snippet(path: "site/Snippets/mongokitten-models", slice: "models")
+@Snippet(path: "site/Snippets/mongokitten-basics", slice: "models")
 
-The ``ObjectId`` type is MongoDB's native unique identifier, similar to a ``UUID``. Every document in MongoDB has an `_id` field, which must be unique within a collection. 
+The ``ObjectId`` type is MongoDB's native unique identifier, similar to a ``UUID``. Every document in MongoDB has an `_id` field, which must be unique within a collection.
 
 ### Creating Posts
 
