@@ -1,4 +1,4 @@
-# A Practical Introduction to JWTs in Swift using JWTKit
+# Introduction to JWTs in Swift
 
 JWTKit is a library for working with JSON Web Tokens (JWT) in Swift. It provides a simple and easy-to-use API for creating, parsing, and validating JWTs. JWTs are a popular way to authenticate information (claims) between parties. JWTKit makes it easy to work with them in your Swift projects.
 
@@ -21,7 +21,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4
 
 If you inspect the token on [jwt.io](https://jwt.io), you'll see that it consists of three parts separated by dots: the header, the payload, and the signature.
 
-> Note: don't paste production tokens into jwt.io or any other online tool, as they could be intercepted and misused.
+> Note: Don't paste production tokens into jwt.io or any other online tool, as they could be intercepted and misused.
 
 ## Installing JWTKit
 
@@ -73,7 +73,7 @@ Once you have a ``JWTKeyCollection`` object, you can use it to "create" a JWT. C
 In this example, we define a ``TestPayload`` struct that conforms to the ``JWTPayload`` protocol. This protocol requires us to implement the ``JWTPayload/verify(using:)`` method, which includes optional additional validation logic that can be performed when creating the JWT. In this case, we're verifying that the token has not expired.
 The properties of the struct are the claims we want to include in the JWT. JWTKit provides a number of built-in claims, such as ``ExpirationClaim`` and ``IssuerClaim``, which are commonly used in JWTs. JWTKit supports the [seven registered claims](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1) defined in the JWT specification, but you can also define custom claims if needed. 
 
-> Note: in the example, ``CodingKeys`` are defined to map Swift property names to the JSON keys used in the JWT. This means that in the JWT the expiration claim will be named `exp` and the issuer claim will be named `iss`, as per the JWT specification.
+> Note: In the example, ``CodingKeys`` are defined to map Swift property names to the JSON keys used in the JWT. This means that in the JWT the expiration claim will be named `exp` and the issuer claim will be named `iss`, as per the JWT specification.
 
 To create a JWT with this payload, you can create a new instance of the payload and use the key collection to sign it:
 
@@ -100,12 +100,19 @@ JWTs are commonly used in authentication and authorisation flows in web applicat
 
 This flow allows you to securely transmit information between the client and server without the need for the client to store sensitive information, such as passwords, locally.
 
-Let's put this into practice with a simple example. This example uses Swift pseudo-code to demonstrate the flow, without using a specific web framework. You can adapt this code to work with your preferred web framework.
-First, we'll create a route that handles the login request. This route will receive the user's information, create a JWT with that information, and sign it with the key collection:
+Let's put this into practice with a simple example. The following snippets use Swift pseudo-code to demonstrate the flow, without using a specific web framework. You can adapt this code to work with your preferred web framework.
+First, we'll create a payload struct that contains the user's information:
 
 @Snippet(path: "site/Snippets/jwt-kit", slice: auth_user_payload)
 
-The `UserPayload` struct represents the claims we want to include in the JWT. In this example, we include the user's ID, an expiration claim, and a list of roles. The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user has the "admin" role. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
+The `UserPayload` struct represents the claims we want to include in the JWT. In this snippet, we include the user's ID, an expiration claim, and a list of roles. 
+The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user is an admin. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
+The roles claim is a custom claim:
+
+@Snippet(path: "site/Snippets/jwt-kit", slice: auth_user_role_claim)
+
+This is a simple struct that conforms to the ``JWTClaim`` protocol. The ``value`` property is the value of the claim, which in this case is a list of roles.
+Next, we'll create a route that handles user logins and returns a JWT:
 
 ```swift
 router.post("login") { req async throws -> Response in
@@ -122,7 +129,7 @@ The `login` route receives the user's username and password, finds the user in t
 Next, we'll create a route that handles requests that require authentication. This route will validate the JWT in the request headers and return the requested data if the token is valid:
 
 ```swift
-router.get("protected") { req async throws -> Response in
+router.get("admin-protected") { req async throws -> Response in
     let token = req.headers["Authorization"]
     let payload = try await keyCollection.verify(token, as: UserPayload.self)
     let user = User.find(payload.userID)
@@ -136,7 +143,6 @@ This should be enough to understand how JWTKit can be used to implement an authe
 
 ## Conclusion
 
-JWTKit is a powerful library for working with JSON Web Tokens in Swift. It provides a simple and easy-to-use API for creating, parsing, and validating JWTs, making it easy to implement authentication and authorisation flows in your Swift projects. In this tutorial, you learned how to install JWTKit, create and validate JWTs, and implement an authentication and authorisation flow using JWTs. While this tutorial covered the basics of JWTKit, there are many more features and options available in the library. Check out the [JWTKit documentation](https://api.vapor.codes/jwt-kit/latest/JWTKit/index.html) for more information on how to use JWTKit in your projects.
+JWTKit is a powerful library for working with JSON Web Tokens in Swift. It provides a simple and easy-to-use API for creating, parsing, and validating JWTs, making it easy to implement authentication and authorisation flows in your Swift projects. In this tutorial, you learned how to install JWTKit, create and validate JWTs, and implement an authentication and authorisation flow using JWTs. While this tutorial covered the basics of JWTKit, there are many more features and options available in the library. Check out the [JWTKit README](https://github.com/vapor/jwt-kit) for more information on how to use JWTKit in your projects.
+
 But for now, you should be able to start using JWTs in your Swift projects with confidence!
-
-

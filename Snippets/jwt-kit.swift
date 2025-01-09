@@ -41,11 +41,31 @@ let verifiedPayload = try await keyCollection.verify(
 )
 // snippet.end
 
+// snippet.auth_user_role_claim
+struct RoleClaim: JWTClaim {
+    var value: [String]
+
+    func verifyAdmin() throws {
+        guard value.contains("admin") else {
+            throw JWTError.claimVerificationFailure(
+                failedClaim: self,
+                reason: "User is not an admin"
+            )
+        }
+    }
+}
+// snippet.end
+
+struct User {
+    var id: Int
+    var roles: RoleClaim
+}
+
 // snippet.auth_user_payload
 struct UserPayload: JWTPayload {
-    let userID: UUID
+    let userID: Int
     let expiration: ExpirationClaim
-    let roles: [String]
+    let roles: RoleClaim
 
     enum CodingKeys: String, CodingKey {
         case userID = "user_id"
@@ -55,12 +75,7 @@ struct UserPayload: JWTPayload {
 
     func verify(using key: some JWTAlgorithm) throws {
         try expiration.verifyNotExpired()
-        guard roles.contains("admin") else {
-            throw JWTError.claimVerificationFailure(
-                failedClaim: nil,
-                reason: "User is not an admin"
-            )
-        }
+        try roles.verifyAdmin()
     }
 
     init(from user: User) {
@@ -70,8 +85,3 @@ struct UserPayload: JWTPayload {
     }
 }
 // snippet.end
-
-struct User: Identifiable {
-    let id: UUID
-    let roles: [String]
-}
