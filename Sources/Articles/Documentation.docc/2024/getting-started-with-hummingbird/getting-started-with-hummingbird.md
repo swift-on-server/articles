@@ -41,13 +41,13 @@ Finally, you can use Visual Studio Code to develop and run apps as well. More on
 
 ## Project Structure
 
-The Hummingbird project template includes only two files: 
+The Hummingbird project template includes only two files:
 
-`App.swift` containing your Command Line arguments, and ``AsyncParsableCommand/run()`` function. The type is `@main` annotated, making this is the entrypoint for your app. 
+`App.swift` containing your Command Line arguments, and ``AsyncParsableCommand/run()`` function. The type is `@main` annotated, making this is the entrypoint for your app.
 
-From here, the app calls into `buildApplication`, which is located in `Application+build.swift`. 
+From here, the app calls into `buildApplication`, which is located in `Application+build.swift`.
 
-Once the app is configured in `buildApplication`, the server is started by calling ``Application.runService()``.
+Once the app is configured in `buildApplication`, the server is started by calling ``Application.runService(gracefulShutdownSignals:)``.
 
 Running services starts Hummingbird and all registered dependencies (``Service``s). This kicks off ``ServiceLifecycle``, which manages your app's lifecycle. For now, services are not important to understand in detail, but you can learn about them in detail here: <doc:introduction-to-swift-service-lifecycle>
 
@@ -91,7 +91,7 @@ A route handler has two input parameters: a ``Request`` first, and the Context s
 
 Let's add a new GET route at the `/` path. This means that visiting your server at `http://localhost:8080` you'll see the response.
 
-@Snippet(path: "site/Snippets/HummingbirdApp". slice: basic_route)
+@Snippet(path: "site/Snippets/HummingbirdApp", slice: basic_route)
 
 Rebuild and re-run your app, using Xcode, `swift run` or your other preferred method. Note that we've changed the return type to ``String`` to return a body.
 

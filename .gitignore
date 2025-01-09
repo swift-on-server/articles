@@ -1,8 +1,10 @@
-.DS_Store
-.swiftpm
-.vscode
-.build
-Sources/**/*.html
+/.DS_Store
+/.swiftpm
+/.vscode
+/.build
+/.build.ssgc
+/.ssgc
+/Sources/**/*.html
+/.build.ssgc
+/.index-build
 docc
-.build.ssgc
-.index-build

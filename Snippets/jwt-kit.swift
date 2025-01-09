@@ -1,4 +1,5 @@
 import JWTKit
+import Foundation
 
 // snippet.key_collection_init
 let keyCollection = JWTKeyCollection()

@@ -30,7 +30,7 @@ The above methods are less efficient on a protocol level and often seem like wor
 
 ### Security (WSS)
 
-WebSocket (WS) uses a plain-text TCP connection. A WebSocket connection is created by upgrading an HTTP/1 connection. WebSocket Secure (WSS), which is upgraded from HTTPS, uses TLS to protect the TCP connection. WSS protects against man-in-the-middle attacks but does not offer cross-origin or application-level security. Developers should add URL origin checks and strong authentication. 
+WebSocket (WS) uses a plain-text TCP connection. A WebSocket connection is created by upgrading an HTTP/1 connection. WebSocket Secure (WSS), which is upgraded from HTTPS, uses TLS to protect the TCP connection. WSS protects against man-in-the-middle attacks but does not offer cross-origin or application-level security. Developers should add URL origin checks and strong authentication.
 
 ## Building a real-time WebSocket chat
 
@@ -56,7 +56,7 @@ The [Hummingbird WebSocket chat application](https://github.com/hummingbird-proj
     └── chat.html
 ```
 
-The `App.swift` file contains the standard entry point for a Hummingbird application. The `Application+build.swift` file includes the Hummingbird app configuration using the WebSocket connection manager. The ``ConnectionManager`` is responsible for managing WebSocket connections. The `public/chat.html` file contains client-side JavaScript code to demonstrate a WebSocket connection.
+The `App.swift` file contains the standard entry point for a Hummingbird application. The `Application+build.swift` file includes the Hummingbird app configuration using the WebSocket connection manager. The `ConnectionManager` is responsible for managing WebSocket connections. The `public/chat.html` file contains client-side JavaScript code to demonstrate a WebSocket connection.
 
 To add WebSocket support to a Hummingbird-based Swift package, simply include the Hummingbird Websocket library as a dependency in your `Package.swift` file..
 
@@ -91,20 +91,20 @@ let package = Package(
 )
 ```
 
-The `App.swift` file is the main entry point for a Hummingbird application using the ``ArgumentParser`` library. 
+The `App.swift` file is the main entry point for a Hummingbird application using the ``ArgumentParser`` library.
 
 @Snippet(path: "site/Snippets/websockets", slice: "entrypoint")
 
-1.	The ``AppArguments`` protocol defines hostname and port properties.
+1.	The `AppArguments` protocol defines hostname and port properties.
 2.	The `HummingbirdArguments` structure is the main entry point, using ``AsyncParsableCommand``, and sets command-line options.
 3.	The run function builds the Hummingbird application and starts the server as a service.
 
-The code inside the `Application+build.swift` file sets up a Hummingbird application configured for WebSocket communication. It defines a function buildApplication that takes command-line arguments for hostname and port, initializes a logger, and sets up routers with middlewares for logging and file handling. It creates a ``ConnectionManager`` for managing WebSocket connections and configures the WebSocket router to handle chat connections, upgrading the connection if a username is provided:
+The code inside the `Application+build.swift` file sets up a Hummingbird application configured for WebSocket communication. It defines a function buildApplication that takes command-line arguments for hostname and port, initializes a logger, and sets up routers with middlewares for logging and file handling. It creates a `ConnectionManager` for managing WebSocket connections and configures the WebSocket router to handle chat connections, upgrading the connection if a username is provided:
 
 @Snippet(path: "site/Snippets/websockets", slice: "buildApplication")
 
 1. A ``Router`` instance is created, and middlewares for logging requests and serving files are added to it.
-2. A ``ConnectionManager`` instance is created with a logger for managing WebSocket connections.
+2. A `ConnectionManager` instance is created with a logger for managing WebSocket connections.
 3. A separate ``Router`` instance is created specifically for handling and logging WebSocket requests.
 4. A WebSocket route is set up for the `/chat` path, checking for a username query parameter for WebSocket upgrades.
 5. On upgrade, the connection manager handles WebSocket users and writes the output stream to the outbound channel.
@@ -116,24 +116,24 @@ The application is configured to use HTTP with WebSocket upgrades and includes W
 1. An `Application` instance is created with the previously configured routers for both HTTP and WebSocket requests.
 2. The `ConnectionManager` is added as a service to the application before returning it.
 
-The ``ConnectionManager`` struct manages WebSocket connections, allowing users to join, send messages, and leave the chat, using an `AsyncStream` for connection handling and Actor for managing outbound connections:
+The `ConnectionManager` struct manages WebSocket connections, allowing users to join, send messages, and leave the chat, using an `AsyncStream` for connection handling and Actor for managing outbound connections:
 
 @Snippet(path: "site/Snippets/websockets-connection-manager-types")
 
-1. The ``ConnectionManager`` implements the ``Service`` protocol to manage WebSocket connections and ensure graceful shutdown.
+1. The `ConnectionManager` implements the ``Service`` protocol to manage WebSocket connections and ensure graceful shutdown.
 2. ``OutputStream`` is defined as an ``AsyncChannel`` for sending WebSocket outbound frames.
-3. The ``Connection`` struct contains details about each WebSocket connection, including the username, inbound stream, and outbound stream.
-4. The ``OutboundConnections`` actor manages a dictionary of outbound writers to broadcast messages to all connections.
+3. The `Connection` struct contains details about each WebSocket connection, including the username, inbound stream, and outbound stream.
+4. The `OutboundConnections` actor manages a dictionary of outbound writers to broadcast messages to all connections.
 
-The ``addUser`` function creates a ``Connection`` object with a given name and WebSocket streams, yields this connection, and returns a new ``OutputStream``:
+The `addUser` function creates a `Connection` object with a given name and WebSocket streams, yields this connection, and returns a new ``OutputStream``:
 
 @Snippet(path: "site/Snippets/websockets-connection-manager-add-user")
 
-The ``init(logger:)`` method creates an asynchronous stream for ``Connection`` objects along with a logger, and the ``run`` function asynchronously handles connections by logging their addition, processing inbound messages, sending outbound messages, and logging their removal, with graceful shutdown support:
+The `init(logger:)` method creates an asynchronous stream for `Connection` objects along with a logger, and the `run` function asynchronously handles connections by logging their addition, processing inbound messages, sending outbound messages, and logging their removal, with graceful shutdown support:
 
 @Snippet(path: "site/Snippets/websockets", slice: "ConnectionManager")
 
-1. The ``run`` function iterates through the `connectionStream` asynchronously to handle incoming connections and messages.
+1. The `run` function iterates through the `connectionStream` asynchronously to handle incoming connections and messages.
 2. For each connection, a task is added to the group to manage the connection and broadcast the "joined" message.
 3. The task listens for incoming messages, processing text messages to broadcast to all connections.
 4. Each received text message is broadcast to all outbound connections by calling `send`.
@@ -147,7 +147,7 @@ Execute the app and open a web browser to navigate to the [WebSocket Tester Tool
 ws://localhost:8080/chat?username=Tib
 ```
 
-The `username` parameter can be modified as needed. Press the _Connect_ button to add a new user to the chat room. Upon connection, messages can be sent as the user by entering a custom message and clicking the _Send Message_ button. Multiple windows of the WebSocket Tester Tool can be opened to add additional users. 
+The `username` parameter can be modified as needed. Press the _Connect_ button to add a new user to the chat room. Upon connection, messages can be sent as the user by entering a custom message and clicking the _Send Message_ button. Multiple windows of the WebSocket Tester Tool can be opened to add additional users.
 
 ## Conclusion
 

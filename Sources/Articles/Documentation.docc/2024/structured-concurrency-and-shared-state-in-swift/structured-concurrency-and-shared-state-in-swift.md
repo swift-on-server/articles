@@ -36,7 +36,7 @@ An actor's isolation is inherited by its properties and methods. Actor Isolation
 
 @Snippet(path: "site/Snippets/shared-state", slice: "unownedExecutor")
 
-You can create your own ``SerialExecutor`` for use with your actors. SwiftNIO's EventLoop already has a ``EventLoop/executor [59PH6]`` property that you can use. ``/Dispatch``'s ``DispatchQueue`` can be adapted easily as well.
+You can create your own ``SerialExecutor`` for use with your actors. SwiftNIO's EventLoop already has a ``EventLoop/executor [requirement: false]`` property that you can use. ``/Dispatch``'s ``DispatchQueue`` can be adapted easily as well.
 
 Since ``Actor/unownedExecutor`` is not a static member of an actor, an actor's static properties can _not be isolated_ by the actor.
 
@@ -162,7 +162,7 @@ We can restructure the `loadImage` function to use a continuation:
 
 @Snippet(path: "site/Snippets/shared-state", slice: "efficientImageCache")
 
-**Note:** When creating a continuation, you're starting a new workload that does not (yet) adopt structured concurrency. When this happens, this code is also responsible for ensuring that Task Cancellation is handled propertly. For that, please refer back to ``withTaskCancellationHandler`` earlier in this article.
+**Note:** When creating a continuation, you're starting a new workload that does not (yet) adopt structured concurrency. When this happens, this code is also responsible for ensuring that Task Cancellation is handled propertly. For that, please refer back to ``withTaskCancellationHandler(operation:onCancel:isolation:)`` earlier in this article.
 
 ## Global Actors
 
@@ -327,7 +327,7 @@ However, heavy workload _can_ be run on a custom executor. Using the pattern sho
 
 ### Inheriting Actor Isolation
 
-Starting with Swift 6, a variant of ``AsyncSequence.next()`` is available.
+Starting with Swift 6, a variant of ``AsyncIteratorProtocol.next()`` is available.
 
 ```swift
 mutating func next(isolation actor: isolated (any Actor)? = #isolation) async throws -> Element?
@@ -337,6 +337,6 @@ The `isolated (any Actor)?` argument allows callees to tell an `async` function 
 
 In addition, Swift 6' AsyncSequences can specify an `associatedtype Failure: Error`. Using typed throws, you can specify the type of error that the iterator can throw.
 
-```swift 
+```swift
 mutating func next(isolation actor: isolated (any Actor)? = #isolation) async throws(MyCustomIteratorError) -> Element?
 ```

@@ -144,6 +144,5 @@ This should be enough to understand how JWTKit can be used to implement an authe
 ## Conclusion
 
 JWTKit is a powerful library for working with JSON Web Tokens in Swift. It provides a simple and easy-to-use API for creating, parsing, and validating JWTs, making it easy to implement authentication and authorisation flows in your Swift projects. In this tutorial, you learned how to install JWTKit, create and validate JWTs, and implement an authentication and authorisation flow using JWTs. While this tutorial covered the basics of JWTKit, there are many more features and options available in the library. Check out the [JWTKit README](https://github.com/vapor/jwt-kit) for more information on how to use JWTKit in your projects.
+
 But for now, you should be able to start using JWTs in your Swift projects with confidence!
-
-
