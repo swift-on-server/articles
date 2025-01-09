@@ -1,4 +1,5 @@
 import JWTKit
+import Foundation
 
 // snippet.key_collection_init
 let keyCollection = JWTKeyCollection()
@@ -56,7 +57,7 @@ struct UserPayload: JWTPayload {
         try expiration.verifyNotExpired()
         guard roles.contains("admin") else {
             throw JWTError.claimVerificationFailure(
-                name: "roles",
+                failedClaim: nil,
                 reason: "User is not an admin"
             )
         }
@@ -69,3 +70,8 @@ struct UserPayload: JWTPayload {
     }
 }
 // snippet.end
+
+struct User: Identifiable {
+    let id: UUID
+    let roles: [String]
+}
