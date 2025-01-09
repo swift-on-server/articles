@@ -1,4 +1,4 @@
-# A Practical Introduction to JWTs in Swift using JWTKit
+# Introduction to JWTs in Swift
 
 JWTKit is a library for working with JSON Web Tokens (JWT) in Swift. It provides a simple and easy-to-use API for creating, parsing, and validating JWTs. JWTs are a popular way to authenticate information (claims) between parties. JWTKit makes it easy to work with them in your Swift projects.
 
@@ -21,7 +21,7 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4
 
 If you inspect the token on [jwt.io](https://jwt.io), you'll see that it consists of three parts separated by dots: the header, the payload, and the signature.
 
-> Note: don't paste production tokens into jwt.io or any other online tool, as they could be intercepted and misused.
+> Note: Don't paste production tokens into jwt.io or any other online tool, as they could be intercepted and misused.
 
 ## Installing JWTKit
 
@@ -73,7 +73,7 @@ Once you have a ``JWTKeyCollection`` object, you can use it to "create" a JWT. C
 In this example, we define a ``TestPayload`` struct that conforms to the ``JWTPayload`` protocol. This protocol requires us to implement the ``JWTPayload/verify(using:)`` method, which includes optional additional validation logic that can be performed when creating the JWT. In this case, we're verifying that the token has not expired.
 The properties of the struct are the claims we want to include in the JWT. JWTKit provides a number of built-in claims, such as ``ExpirationClaim`` and ``IssuerClaim``, which are commonly used in JWTs. JWTKit supports the [seven registered claims](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1) defined in the JWT specification, but you can also define custom claims if needed. 
 
-> Note: in the example, ``CodingKeys`` are defined to map Swift property names to the JSON keys used in the JWT. This means that in the JWT the expiration claim will be named `exp` and the issuer claim will be named `iss`, as per the JWT specification.
+> Note: In the example, ``CodingKeys`` are defined to map Swift property names to the JSON keys used in the JWT. This means that in the JWT the expiration claim will be named `exp` and the issuer claim will be named `iss`, as per the JWT specification.
 
 To create a JWT with this payload, you can create a new instance of the payload and use the key collection to sign it:
 
