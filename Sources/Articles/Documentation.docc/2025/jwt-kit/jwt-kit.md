@@ -100,12 +100,19 @@ JWTs are commonly used in authentication and authorisation flows in web applicat
 
 This flow allows you to securely transmit information between the client and server without the need for the client to store sensitive information, such as passwords, locally.
 
-Let's put this into practice with a simple example. This example uses Swift pseudo-code to demonstrate the flow, without using a specific web framework. You can adapt this code to work with your preferred web framework.
-First, we'll create a route that handles the login request. This route will receive the user's information, create a JWT with that information, and sign it with the key collection:
+Let's put this into practice with a simple example. The following snippets use Swift pseudo-code to demonstrate the flow, without using a specific web framework. You can adapt this code to work with your preferred web framework.
+First, we'll create a payload struct that contains the user's information:
 
 @Snippet(path: "site/Snippets/jwt-kit", slice: auth_user_payload)
 
-The `UserPayload` struct represents the claims we want to include in the JWT. In this example, we include the user's ID, an expiration claim, and a list of roles. The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user has the "admin" role. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
+The `UserPayload` struct represents the claims we want to include in the JWT. In this snippet, we include the user's ID, an expiration claim, and a list of roles. 
+The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user is an admin. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
+The roles claim is a custom claim:
+
+@Snippet(path: "site/Snippets/jwt-kit", slice: auth_user_role_claim)
+
+This is a simple struct that conforms to the ``JWTClaim`` protocol. The ``value`` property is the value of the claim, which in this case is a list of roles.
+Next, we'll create a route that handles user logins and returns a JWT:
 
 ```swift
 router.post("login") { req async throws -> Response in
@@ -122,7 +129,7 @@ The `login` route receives the user's username and password, finds the user in t
 Next, we'll create a route that handles requests that require authentication. This route will validate the JWT in the request headers and return the requested data if the token is valid:
 
 ```swift
-router.get("protected") { req async throws -> Response in
+router.get("admin-protected") { req async throws -> Response in
     let token = req.headers["Authorization"]
     let payload = try await keyCollection.verify(token, as: UserPayload.self)
     let user = User.find(payload.userID)
