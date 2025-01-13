@@ -21,7 +21,7 @@ func forward(
     clientRequest.headers = .init(request.headers)
 
     // 2.
-    let contentLength = if let header = request.headers[.contentLength], let value = Int(header) {
+    let contentLength = if let header = request.headers[.contentLength], let value = Int64(header) {
         HTTPClientRequest.Body.Length.known(value)
     } else {
         HTTPClientRequest.Body.Length.unknown
