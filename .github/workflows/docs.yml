@@ -51,4 +51,5 @@ jobs:
                 run: |
                     unidoc compile -I .. \
                     --ci fail-on-errors \
-                    --package-name articles
+                    --package-name articles \
+                    --define DARWIN
