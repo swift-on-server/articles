@@ -18,8 +18,8 @@ jobs:
             -   name: Install Swift
                 uses: tayloraswift/swift-install-action@master
                 with:
-                    swift-prefix: "swift-6.0.1-release/ubuntu2404/swift-6.0.1-RELEASE"
-                    swift-id: "swift-6.0.1-RELEASE-ubuntu24.04"
+                    swift-prefix: "swift-6.0.3-release/ubuntu2404/swift-6.0.3-RELEASE"
+                    swift-id: "swift-6.0.3-RELEASE-ubuntu24.04"
 
             -   name: Install Unidoc
                 uses: tayloraswift/swift-unidoc-action@master
@@ -46,7 +46,10 @@ jobs:
                 uses: actions/checkout@v3
 
             -   name: Validate documentation
+                env:
+                    DEVELOPER_DIR: /Applications/Xcode_16.2.app/Contents/Developer
                 run: |
                     unidoc compile -I .. \
                     --ci fail-on-errors \
-                    --package-name articles
+                    --package-name articles \
+                    --define DARWIN

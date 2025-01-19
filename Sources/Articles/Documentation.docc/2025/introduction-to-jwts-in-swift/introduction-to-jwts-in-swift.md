@@ -70,10 +70,10 @@ Once you have a ``JWTKeyCollection`` object, you can use it to "create" a JWT. C
 
 @Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: payload_struct)
 
-In this example, we define a ``TestPayload`` struct that conforms to the ``JWTPayload`` protocol. This protocol requires us to implement the ``JWTPayload/verify(using:)`` method, which includes optional additional validation logic that can be performed when creating the JWT. In this case, we're verifying that the token has not expired.
-The properties of the struct are the claims we want to include in the JWT. JWTKit provides a number of built-in claims, such as ``ExpirationClaim`` and ``IssuerClaim``, which are commonly used in JWTs. JWTKit supports the [seven registered claims](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1) defined in the JWT specification, but you can also define custom claims if needed. 
+In this example, we define a `TestPayload` struct that conforms to the ``JWTPayload`` protocol. This protocol requires us to implement the ``JWTPayload/verify(using:)`` method, which includes optional additional validation logic that can be performed when creating the JWT. In this case, we're verifying that the token has not expired.
+The properties of the struct are the claims we want to include in the JWT. JWTKit provides a number of built-in claims, such as ``ExpirationClaim`` and ``IssuerClaim``, which are commonly used in JWTs. JWTKit supports the [seven registered claims](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1) defined in the JWT specification, but you can also define custom claims if needed.
 
-> Note: In the example, ``CodingKeys`` are defined to map Swift property names to the JSON keys used in the JWT. This means that in the JWT the expiration claim will be named `exp` and the issuer claim will be named `iss`, as per the JWT specification.
+> Note: In the example, `CodingKeys` are defined to map Swift property names to the JSON keys used in the JWT. This means that in the JWT the expiration claim will be named `exp` and the issuer claim will be named `iss`, as per the JWT specification.
 
 To create a JWT with this payload, you can create a new instance of the payload and use the key collection to sign it:
 
@@ -105,13 +105,13 @@ First, we'll create a payload struct that contains the user's information:
 
 @Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: auth_user_payload)
 
-The `UserPayload` struct represents the claims we want to include in the JWT. In this snippet, we include the user's ID, an expiration claim, and a list of roles. 
+The `UserPayload` struct represents the claims we want to include in the JWT. In this snippet, we include the user's ID, an expiration claim, and a list of roles.
 The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user is an admin. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
 The roles claim is a custom claim:
 
 @Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: auth_user_role_claim)
 
-This is a simple struct that conforms to the ``JWTClaim`` protocol. The ``value`` property is the value of the claim, which in this case is a list of roles.
+This is a simple struct that conforms to the ``JWTClaim`` protocol. The ``JWTClaim/value`` property is the value of the claim, which in this case is a list of roles.
 Next, we'll create a route that handles user logins and returns a JWT:
 
 @Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: auth_user_payload)
