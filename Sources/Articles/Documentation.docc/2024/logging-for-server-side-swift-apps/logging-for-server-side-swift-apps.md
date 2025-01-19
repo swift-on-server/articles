@@ -562,9 +562,9 @@ Define a custom environment variable based on your identifier:
 
 e.g.: `my-library` -> `MY_LIBRARY_LOG_LEVEL`
 
-The ``setenv(_:_:_:)`` function can be used to define environmental variables from Swift code.
+The ``setenv(_:_:_:) [ignore when: DARWIN]`` function can be used to define environmental variables from Swift code.
 
-Important: Avoid utilizing the ``setenv(_:_:_:)`` function. It is intended solely for demonstration purposes.
+Important: Avoid utilizing the ``setenv(_:_:_:) [ignore when: DARWIN]`` function. It is intended solely for demonstration purposes.
 
 Run the project from the command line, using the following command to explicitly set environment variables:
 
