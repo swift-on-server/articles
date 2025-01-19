@@ -14,7 +14,10 @@ Classes are not automatically Sendable. Since reference types are explicitly not
 
 If you're working with a class that is not a set of constants, you can still mark it as Sendable by using the `@unchecked Sendable` conformance. When you use this conformance, you're telling the compiler that you're sure that the class is Sendable, and that you're taking responsibility of isolating the state. In this case, you can adopt your own isolation such as Locks.
 
-@Snippet(path: "site/Snippets/shared-state", slice: "sharedState")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "sharedState"
+)
 
 ### Actors and Isolation
 
@@ -28,13 +31,19 @@ When accessing an actor's state or calling its functions, you can prefix your ca
 
 You can define an actor like so:
 
-@Snippet(path: "site/Snippets/shared-state", slice: "bankAccount")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "bankAccount"
+)
 
 Just like any type, you can make an `extension` on an actor. Actors can also conform to protocols, assuming that the protocol's signature can be feasibly implemented with isolation. A common obstacle is that you can't easily conform to a protocol that has properties or methods that are not isolated.
 
 An actor's isolation is inherited by its properties and methods. Actor Isolation is compile-time checked to ensures that only one task can access the actor's state at a time. This is achieved through the ``Actor/unownedExecutor`` of an actor. This is a ``SerialExecutor`` that the Swift runtime submits tasks to, which provides the isolation in this actor. The SerialExecutor may be a single thread, or multiple. But needs to guarantee that only one task is running on this at a time. Akin to `DispatchQueue.main.async { }` in GCD.
 
-@Snippet(path: "site/Snippets/shared-state", slice: "unownedExecutor")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "unownedExecutor"
+)
 
 You can create your own ``SerialExecutor`` for use with your actors. SwiftNIO's EventLoop already has a ``EventLoop/executor [requirement: false]`` property that you can use. ``/Dispatch``'s ``DispatchQueue`` can be adapted easily as well.
 
@@ -44,7 +53,10 @@ Since ``Actor/unownedExecutor`` is not a static member of an actor, an actor's s
 
 You can use the `nonisolated` keyword to mark a function as lacking isolation. This allows you to access these functions without the `await` keyword, and conform to protocols that have non-isolated methods.
 
-@Snippet(path: "site/Snippets/shared-state", slice: "bookStore")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "bookStore"
+)
 
 Starting with Swift 5.10, `nonisolated(unsafe)` can be used to opt-out of actor isolation checking for stored properties. This is useful to expose a property or method to the outside world, but you're sure that it's safe to do so. In this case, you're taking responsibility of isolating the state.
 
@@ -52,7 +64,10 @@ Starting with Swift 5.10, `nonisolated(unsafe)` can be used to opt-out of actor 
 
 The alternative way to conform to protocols, is for the _protocol_ to be aware of the actor's isolation. This is done by using `async` computed properties.
 
-@Snippet(path: "site/Snippets/shared-state", slice: "bankAccountProtocol")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "bankAccountProtocol"
+)
 
 Because actor isolation makes these functions and properties `async`, this actor can now to the defined protocol.
 
@@ -72,13 +87,19 @@ Because of re-entrancy, multiple tasks can call functions on the same actor at t
 
 Let's take the image cache example as an actor:
 
-@Snippet(path: "site/Snippets/shared-state", slice: "imageCache")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "imageCache"
+)
 
 The above function is an implementation of the image cache. It's a simple actor that allows storing and retrieving images by URL. Since actors are re-entrant, `loadImage` can be ran multiple times concurrently. This can lead to multiple fetches of the same image, and multiple writes to the cache.
 
 Your code can still be correct and crash-free, but can be inefficient.
 
-@Snippet(path: "site/Snippets/shared-state", slice: "loadingAwareImageCache")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "loadingAwareImageCache"
+)
 
 The above function is an improved implementation of the image cache. By tracking the URLs that are currently being loaded, you can avoid fetching the same image multiple times.
 
@@ -113,7 +134,10 @@ final class NeedsImage {
 
 By explicitly creating a capture group, you'll only retain the values needed. See the following example:
 
-@Snippet(path: "site/Snippets/shared-state", slice: "captureGroups")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "captureGroups"
+)
 
 ### @Sendable Functions
 
@@ -121,7 +145,10 @@ When marking functions as `@Sendable`, you're telling Swift that the function is
 
 Callback function arguments can be marked `@Sendable` as such:
 
-@Snippet(path: "site/Snippets/shared-state", slice: "findImages")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "findImages"
+)
 
 Finally, regular functions can be marked `@Sendable` as well:
 
@@ -138,7 +165,10 @@ So far, we've been using `await` to wait for a value to be available. But not al
 A continuation is a way to capture the current state of a task, and to resume the task at a later point.
 Let's implement a simple continuation that fetches an image:
 
-@Snippet(path: "site/Snippets/shared-state", slice: "continuations")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "continuations"
+)
 
 There are two variations of continuations.
 
@@ -160,7 +190,10 @@ Let's go back to the ImageCache example. In that example, the `loadImage` functi
 
 We can restructure the `loadImage` function to use a continuation:
 
-@Snippet(path: "site/Snippets/shared-state", slice: "efficientImageCache")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "efficientImageCache"
+)
 
 **Note:** When creating a continuation, you're starting a new workload that does not (yet) adopt structured concurrency. When this happens, this code is also responsible for ensuring that Task Cancellation is handled propertly. For that, please refer back to ``withTaskCancellationHandler(operation:onCancel:isolation:)`` earlier in this article.
 
@@ -215,7 +248,10 @@ This frees up the actor to continue processing other tasks, and prevents the act
 
 Custom global actors can be created through the `@globalActor` attribute:
 
-@Snippet(path: "site/Snippets/shared-state", slice: "globalActor")
+@Snippet(
+    path: "articles/Snippets/2024/structured-concurrency-and-shared-state-in-swift/snippets", 
+    slice: "globalActor"
+)
 
 With this addition, you can isolate properties, functions _and types_ to the `SensorActor`:
 

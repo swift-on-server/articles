@@ -51,11 +51,17 @@ $ swift package init --name 'Swift Snippets'
 
 This should initialize a new Swift package with a `Package.swift` resembling the following.
 
-@Code(name: "Package.swift", file: Manifest.1.swift)
+@Code(
+    name: "Package.swift", 
+    file: "Manifest.1.swift"
+)
 
 Rename the library target to `SnippetsExample`.
 
-@Code(name: "Package.swift", file: Manifest.2.swift)
+@Code(
+    name: "Package.swift", 
+    file: "Manifest.2.swift"
+)
 
 Make sure the `Sources/SnippetsExample` directory contains at least one Swift file. For this tutorial, we will add an empty file named `anchor.swift`.
 
@@ -69,7 +75,9 @@ $ mkdir Snippets
 
 Inside the `Snippets` directory, create a new Swift file named `SnippetsExample_I.swift`.
 
-@Snippet(id: "SnippetsExample_I")
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-swiftpm-snippets/example-01", 
+)
 
 The directory structure should now look like this:
 
@@ -142,7 +150,10 @@ $ mkdir -p Sources/SnippetsExample/docs.docc
 
 Create a markdown article named `My article.md` in the `docs.docc` directory.
 
-@Code(name: "My article.md", file: "My article (1).md.txt")
+@Code(
+    name: "My article.md", 
+    file: "My article (1).md.txt"
+)
 
 In the example above, we have specified the Snippet to include by `path` identity.
 
@@ -152,7 +163,10 @@ If the Snippet ID contains special characters, you should pass the ID as-is, wit
 
 Some documentation engines such as [Unidoc](https://github.com/tayloraswift/swift-unidoc) support referencing Snippets by `id`.
 
-@Code(name: "My article.md", file: "My article (2).md.txt")
+@Code(
+    name: "My article.md", 
+    file: "My article (2).md.txt"
+)
 
 >   Important:
 >   DocC does not currently support referencing Snippets by ID. Instead, you must use the fully-qualified `path` syntax to reference a Snippet.
@@ -177,7 +191,10 @@ The project layout should now look like this:
 
 Many developers find [DocC](https://github.com/apple/swift-docc) helpful for previewing documentation locally. To use DocC, add the [swift-docc-plugin](https://github.com/apple/swift-docc-plugin) to the package manifest.
 
-@Code(name: Package.swift, file: Manifest.3.swift)
+@Code(
+    name: "Package.swift", 
+    file: "Manifest.3.swift"
+)
 
 Please note that while it is possible to build DocC documentation using Xcode, Snippets will not render, due to [FB13482049](http://ww.openradar.appspot.com/FB13482049).
 
@@ -197,13 +214,18 @@ You can find the rendered article at [`http://localhost:8080/documentation/snipp
 
 If a Snippet begins with contiguous line comments, those comments will be parsed as Markdown and treated as a Snippet caption. Try adding the following code to a Snippet named `SnippetsExample_II.swift`.
 
-@Code(name: "SnippetsExample_II.swift", file: SnippetsExample_II.swift)
+@Code(
+    name: "SnippetsExample_II.swift", 
+    file: SnippetsExample_II.swift
+)
 
 When embedded, it should look like this:
 
 ---
 
-@Snippet(id: SnippetsExample_II)
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-swiftpm-snippets/example-02", 
+)
 
 >   Note:
 >   Snippet captions cannot embed other Snippets.
@@ -222,14 +244,18 @@ You can redact portions of a Snippet using **slice directives**. A slice directi
 
 Below is an example of a Snippet that uses redactions to hide the `import` statements.
 
-@Code(name: SnippetsExample_III.swift, file: SnippetsExample_III.swift)
+@Code(
+    name: "SnippetsExample_III.swift", 
+    file: "SnippetsExample_III.swift"
+)
 
 When embedded, it should look like this:
 
 ---
 
-@Snippet(id: SnippetsExample_III)
-
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-swiftpm-snippets/example-03", 
+)
 
 >   Warning:
 >   At the time of writing, there is a [known bug](https://github.com/apple/swift-docc/issues/946) preventing DocC from slicing Snippets that contain multi-line string literals correctly.
@@ -239,14 +265,18 @@ When embedded, it should look like this:
 
 The indentation of the first `snippet.show` determines specifies the maximum amount of indentation to remove from the Snippet. In the example below, four spaces of indentation will be removed from the rendered Snippet. Note that the `snippet.end` token is required in order to prevent the Snippet from including the final brace, which would have prevented the indentation from being removed.
 
-@Code(name: SnippetsExample_IV.swift, file: SnippetsExample_IV.swift)
+@Code(
+    name: "SnippetsExample_IV.swift", 
+    file: "SnippetsExample_IV.swift"
+)
 
 When embedded, it should look like this:
 
 ---
 
-@Snippet(id: SnippetsExample_IV)
-
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-swiftpm-snippets/example-04", 
+)
 
 ## Using named slices
 
@@ -254,20 +284,36 @@ You can also use **named slices** to create Snippets with multiple embeddable se
 
 Below is an example of a Snippet with a caption and three named slices.
 
-@Code(name: SnippetsExample_V.swift, file: SnippetsExample_V.swift)
+@Code(
+    name: "SnippetsExample_V.swift", 
+    file: "SnippetsExample_V.swift"
+)
 
 Here’s how you might embed the slices in a Markdown article.
 
-@Code(name: "My article.md", file: "My article (3).md.txt")
+@Code(
+    name: "My article.md", 
+    file: "My article (3).md.txt"
+)
 
 And here’s how the embedded slices should look.
 
 ---
 
-@Snippet(id: SnippetsExample_V, slice: DECLARATION)
-@Snippet(id: SnippetsExample_V, slice: BODY)
-@Snippet(id: SnippetsExample_V, slice: EXIT)
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-swiftpm-snippets/example-05",
+    slice: "DECLARATION" 
+)
 
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-swiftpm-snippets/example-05",
+    slice: "BODY" 
+)
+
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-swiftpm-snippets/example-05",
+    slice: "EXIT" 
+)
 
 ## Where to go from here
 

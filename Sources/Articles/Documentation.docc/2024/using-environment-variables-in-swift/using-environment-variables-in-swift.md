@@ -13,7 +13,10 @@ In Swift, it is possible to access environment variables using the [ProcessInfo]
 
 Here's a quick example how to get the value of the `LOG_LEVEL` variable:
 
-@Snippet(path: "site/Snippets/environment", slice: "processInfo")
+@Snippet(
+    path: "articles/Snippets/2024/using-environment-variables-in-swift/snippets", 
+    slice: "processInfo"
+)
 
 The process info's environment is represented a `[String: String]` dictionary. When requesting a specific key, the value is going to be an optional `String` type.
 
@@ -153,7 +156,10 @@ Vapor will look for dotenv files in the current working directory. If you're usi
 
 In Hummingbird, it is possible to use the shared environment or load dotenv files using the static `dotEnv()` method on the  [HBEnvironment](https://hummingbird-project.github.io/hummingbird-docs/1.0/documentation/hummingbirdauth/hbenvironment) struct:
 
-@Snippet(path: "site/Snippets/environment", slice: "hummingbird")
+@Snippet(
+    path: "articles/Snippets/2024/using-environment-variables-in-swift/snippets", 
+    slice: "hummingbird"
+)
 
 If you run the project from Xcode, make sure you set a custom working directory, otherwise the framework won't be able to locate your dotenv file.
 

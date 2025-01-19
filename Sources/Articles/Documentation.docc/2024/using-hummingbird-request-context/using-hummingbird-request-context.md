@@ -24,13 +24,19 @@ Hummingbird provides a very simple context called ``BasicRequestContext``, which
 
 To create a custom context, create a struct that conforms to the ``RequestContext`` protocol. This struct stores any properties related to the request.
 
-@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: custom_request_context)
+@Snippet(
+    path: "articles/Snippets/2024/using-hummingbird-request-context/snippets", 
+    slice: "custom_request_context"
+)
 
 The context is not to be used for dependency injection, such as a database connection. If a property is shared between requests, inject that type in the controller instead. <!-- TODO: Tutorial -->
 
 From here, instantiate a ``Router`` instance using the new context as a basis.
 
-@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: router)
+@Snippet(
+    path: "articles/Snippets/2024/using-hummingbird-request-context/snippets", 
+    slice: "router"
+)
 
 ### Authentication
 
@@ -52,7 +58,10 @@ First, create a middleware type that conforms to the ``RouterMiddleware`` protoc
 
 While middleware can specify a `typealias` to constrain to a specific context, it's also possible make a middleware generic.
 
-@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: simple_middleware)
+@Snippet(
+    path: "articles/Snippets/2024/using-hummingbird-request-context/snippets", 
+    slice: "simple_middleware"
+)
 
 ### Context Protocols
 
@@ -60,11 +69,17 @@ In the example above, the middleware specifies the type of Context it needs. How
 
 First, specify a protocol that the context must conform to. This protocol can be as simple as a marker protocol, or it can specify properties that the middleware needs.
 
-@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: context_protocol)
+@Snippet(
+    path: "articles/Snippets/2024/using-hummingbird-request-context/snippets", 
+    slice: "context_protocol"
+)
 
 Then, remove the `typealias` and replace it with a generic parameter. This parameter is constrained to the new protocol.
 
-@Snippet(path: "site/Snippets/HummingbirdRequestContext", slice: context_protocol_middleware)
+@Snippet(
+    path: "articles/Snippets/2024/using-hummingbird-request-context/snippets", 
+    slice: "context_protocol_middleware"
+)
 
 That's all you need to do! Now, the middleware can be used with any context that conforms to the protocol.
 

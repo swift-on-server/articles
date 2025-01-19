@@ -2,7 +2,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "swiftonserver-articles",
+    name: "articles",
     platforms: [
         .macOS(.v15),
     ],

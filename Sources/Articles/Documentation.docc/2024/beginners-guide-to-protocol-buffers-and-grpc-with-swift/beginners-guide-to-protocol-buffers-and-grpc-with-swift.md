@@ -228,7 +228,10 @@ It's also a good practice to retain the original `.proto` files for reference an
 
 With the generated data types and interfaces in place, the server-side interface can now be implemented using the gRPC library. Below is an example of a simple actor-based implementation that utilizes in-memory storage and fulfills the `TodoService` protocol requirements:
 
-@Snippet(path: "site/Snippets/beginners-guide-to-protocol-buffers-and-grpc-with-swift", slice: todo_service_protocol)
+@Snippet(
+    path: "articles/Snippets/2024/beginners-guide-to-protocol-buffers-and-grpc-with-swift/snippets", 
+    slice: "todo_service_protocol"
+)
 
 The snippet above relies on several types from the gRPC library, such as `ServerRequest` and `ServerContext`, which are passed as arguments to each function call. The functions also use Swift data types generated from the `todo_messages.proto` file, ensuring that the required input and output data is provided correctly.
 
@@ -236,7 +239,10 @@ The final step involves configuring the gRPC server. This can be achieved by cre
 
 This setup is built on the v2 gRPC library, which introduces support for modern concurrency features, including task groups and the Service Lifecycle library. Below is an example demonstrating how to configure the server using the upcoming gRPC v2 release:
 
-@Snippet(path: "site/Snippets/beginners-guide-to-protocol-buffers-and-grpc-with-swift", slice: app_entrypoint)
+@Snippet(
+    path: "articles/Snippets/2024/beginners-guide-to-protocol-buffers-and-grpc-with-swift/snippets", 
+    slice: "app_entrypoint"
+)
 
 1.	Creates a gRPC server using the specified `http2NIOPosix` transport layer with the provided configuration. 
 2.	Add the `TodoService` as a service, which contains the logic for handling gRPC requests.

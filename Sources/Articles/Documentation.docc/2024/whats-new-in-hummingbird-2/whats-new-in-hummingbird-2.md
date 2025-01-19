@@ -36,7 +36,9 @@ Hummingbird 2 features a brand new routing library, based on Swift result builde
 
 Here's a little peak into the usage of the new ``RouterBuilder`` object:
 
-@Snippet(path: "site/Snippets/hummingbird-2-routerbuilder")
+@Snippet(
+    path: "articles/Snippets/2024/whats-new-in-hummingbird-2/router-builder"
+)
 
 ## Generic request context
 
@@ -87,7 +89,10 @@ let package = Package(
 
 Here's how to build a custom decoder to handle different media types on your backend server:
 
-@Snippet(path: "site/Snippets/hummingbird-2", slice: "requestDecoder")
+@Snippet(
+    path: "articles/Snippets/2024/whats-new-in-hummingbird-2/snippets", 
+    slice: "requestDecoder"
+)
 
 1. Define the custom decoder by implementing the ``RequestDecoder`` protocol.
 2. Make sure that the incoming request has a `Content-Type` HTTP header field.
@@ -97,7 +102,10 @@ Here's how to build a custom decoder to handle different media types on your bac
 
 To use the custom decoder, let's define a custom request context. A request context is a container for the Hummingbird framework to store information needed by the framework. The following snippet demonstrates how to build one using the _RequestContext_ protocol:
 
-@Snippet(path: "site/Snippets/hummingbird-2", slice: "requestContext")
+@Snippet(
+    path: "articles/Snippets/2024/whats-new-in-hummingbird-2/snippets", 
+    slice: "requestContext"
+)
 
 1. Define a custom `MyRequestContext` protocol using the _RequestContext_ protocol.
 2. Implement the `MyRequestContext` protocol using a `MyBaseRequestContext` struct.
@@ -110,7 +118,10 @@ It is possible to compose multiple protocols such as _AuthRequestContext_ by con
 
 Create the application instance using the `buildApplication` function.
 
-@Snippet(path: "site/Snippets/hummingbird-2", slice: "buildApp")
+@Snippet(
+    path: "articles/Snippets/2024/whats-new-in-hummingbird-2/snippets", 
+    slice: "buildApp"
+)
 
 1. Setup the router using the `MyBaseRequestContext` type as a custom context.
 2. Add middlewares to the router, HB2 has middlewares on the router instead of the app
@@ -120,11 +131,17 @@ Create the application instance using the `buildApplication` function.
 
 Inside the main entrypoint you can start the server by calling the ``Application.runService(gracefulShutdownSignals:)`` method:
 
-@Snippet(path: "site/Snippets/hummingbird-2", slice: "run")
+@Snippet(
+    path: "articles/Snippets/2024/whats-new-in-hummingbird-2/snippets", 
+    slice: "run"
+)
 
 The route handlers in the `MyController` struct can access of the custom context type.
 
-@Snippet(path: "site/Snippets/hummingbird-2", slice: "controller")
+@Snippet(
+    path: "articles/Snippets/2024/whats-new-in-hummingbird-2/snippets", 
+    slice: "controller"
+)
 
 1. Register route handlers using the router group
 2. Hummingbird is thread-safe, so every route handler should be marked  with `@Sendable` to propagate these thread-safety checks.

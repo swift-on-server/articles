@@ -47,11 +47,15 @@ targets: [
 
 In JWTKit everything revolves around the ``JWTKeyCollection`` object: a collection of keys that can be used to sign and verify JWTs. The declaration is simple, you can add this in your app's configuration code:
 
-@Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: key_collection_init)
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit", slice: "key_collection_init"
+)
 
 Adding keys to the collection is also straightforward:
 
-@Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: key_collection_add_hmac)
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit", slice: "key_collection_add_hmac"
+)
 
 This snippet adds an HMAC (Hash-based Message Authentication Code) key to the collection. HMAC is one of the most common algorithms used to sign JWTs. You can read about it [here](https://blog.boot.dev/cryptography/hmac-and-macs-in-jwts/), but in short, it works like this:
 1. First, the JWT's content (header and payload) is hashed using SHA-256
@@ -68,7 +72,9 @@ Other than HMAC, JWTKit also supports **ECDSA**, **EdDSA** and **RSA** keys. The
 
 Once you have a ``JWTKeyCollection`` object, you can use it to "create" a JWT. Creating a JWT means signing the payload with a key, in this case one from the collection. The payload is the data we want to transmit securely:
 
-@Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: payload_struct)
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit", slice: "payload_struct"
+)
 
 In this example, we define a `TestPayload` struct that conforms to the ``JWTPayload`` protocol. This protocol requires us to implement the ``JWTPayload/verify(using:)`` method, which includes optional additional validation logic that can be performed when creating the JWT. In this case, we're verifying that the token has not expired.
 The properties of the struct are the claims we want to include in the JWT. JWTKit provides a number of built-in claims, such as ``ExpirationClaim`` and ``IssuerClaim``, which are commonly used in JWTs. JWTKit supports the [seven registered claims](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1) defined in the JWT specification, but you can also define custom claims if needed.
@@ -77,7 +83,9 @@ The properties of the struct are the claims we want to include in the JWT. JWTKi
 
 To create a JWT with this payload, you can create a new instance of the payload and use the key collection to sign it:
 
-@Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: jwt_sign)
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit", slice: "jwt_sign"
+)
 
 This will create a token that looks like the one we showed earlier. The token is now ready to be transmitted to the other party.
 
@@ -85,7 +93,9 @@ This will create a token that looks like the one we showed earlier. The token is
 
 Once you receive a JWT, you can use the key collection to verify it. Verification involves verifying the signature of the token and then checking the claims in the payload:
 
-@Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: jwt_verify)
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit", slice: "jwt_verify"
+)
 
 If the token is invalid, an error will be thrown. Otherwise, the payload will be returned and should look like the original payload you signed.
 
@@ -103,18 +113,24 @@ This flow allows you to securely transmit information between the client and ser
 Let's put this into practice with a simple example. The following snippets use Swift pseudo-code to demonstrate the flow, without using a specific web framework. You can adapt this code to work with your preferred web framework.
 First, we'll create a payload struct that contains the user's information:
 
-@Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: auth_user_payload)
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit", slice: "auth_user_payload"
+)
 
 The `UserPayload` struct represents the claims we want to include in the JWT. In this snippet, we include the user's ID, an expiration claim, and a list of roles.
 The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user is an admin. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
 The roles claim is a custom claim:
 
-@Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: auth_user_role_claim)
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit", slice: "auth_user_role_claim"
+)
 
 This is a simple struct that conforms to the ``JWTClaim`` protocol. The ``JWTClaim/value`` property is the value of the claim, which in this case is a list of roles.
 Next, we'll create a route that handles user logins and returns a JWT:
 
-@Snippet(path: "site/Snippets/introduction-to-jwts-in-swift", slice: auth_user_payload)
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit", slice: "auth_user_payload"
+)
 
 The `UserPayload` struct represents the claims we want to include in the JWT. In this example, we include the user's ID, an expiration claim, and a list of roles. The ``JWTPayload/verify(using:)`` method checks that the token has not expired and that the user has the "admin" role. The `init` method creates a new payload from a `User` object, which could be retrieved from a database, for example.
 

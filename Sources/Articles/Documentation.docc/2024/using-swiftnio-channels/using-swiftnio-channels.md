@@ -56,7 +56,10 @@ In order to create a TCP server, you'll first need to create a ``ServerBootstrap
 
 ServerBootstrap requires an ``EventLoopGroup`` to run on. This is a group of EventLoops that the server will use to run on. Each client will be handled by a single specific ``EventLoop``, that is randomly assigned. This helps your server scale to many threads (and cores) without having to worry about thread-safety.
 
-@Snippet(path: "site/Snippets/using-swiftnio-channels", slice: "bootstrap")
+@Snippet(
+    path: "articles/Snippets/2024/using-swiftnio-channels/snippets", 
+    slice: "bootstrap"
+)
 
 The above code can create a TCP server, without any logic to accept or communicate with clients. Let's go over the code step-by-step:
 
@@ -72,7 +75,10 @@ The above code can create a TCP server, without any logic to accept or communica
 With this newly created server, this code can start accepting clients.
 Let's implement that:
 
-@Snippet(path: "site/Snippets/using-swiftnio-channels", slice: "acceptClients")
+@Snippet(
+    path: "articles/Snippets/2024/using-swiftnio-channels/snippets", 
+    slice: "acceptClients"
+)
 
 This code is an implementation of the server bootstrap that was created in the previous snippet. Let's go over the code step-by-step:
 
@@ -86,7 +92,10 @@ This code is an implementation of the server bootstrap that was created in the p
 
 The server is not able to accept client, but can not yet communicate with them. Let's implement that:
 
-@Snippet(path: "site/Snippets/using-swiftnio-channels", slice: "handleClient")
+@Snippet(
+    path: "articles/Snippets/2024/using-swiftnio-channels/snippets", 
+    slice: "handleClient"
+)
 
 This code receives messages from a client, and echoes it back. It's functional, efficient and easy to understand. Let's go over the code step-by-step:
 

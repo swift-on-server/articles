@@ -49,13 +49,14 @@ If a tutorial uses multiple snippets, you can create a folder with your tutorial
 DocC uses the following format to locate a snippet:
 
 ```
-@Snippet(path: "site/Snippets/hummingbird-2")
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit"
+)
 ```
 
-- `site/` is mandatory, and refers to the current Swift package by package name.
-- `Snippets/` is the folder where we store our snippets
-- Optionally, and subfolders of `Snippets/` can be added in between
-- `hummingbird-2` refers to the snippet file. Do not put a `.swift` extensionh ere.
+- `articles` is mandatory, and refers to the current Swift package by package name.
+- The next part is the location where we store our snippet. It is mandatory to start the location with `Snippets`.
+- `jwt-kit` refers to the actual snippet file. Do not use the `.swift` extension here.
 
 If you _don't_ want to render certain example code in the tutorial, you can mark the start of hidden lines of code as such:
 
@@ -88,7 +89,9 @@ And you can end that labeled block as such:
 You can refer to a labeled block (called a "slice") in your tutorial's code:
 
 ```
-@Snippet(path: "site/Snippets/building-swiftnio-clients-01", slice: "imports")
+@Snippet(
+    path: "articles/Snippets/2025/introduction-to-jwts-in-swift/jwt-kit", slice: "key_collection_add_hmac"
+)
 ```
 
 ### Planning an Article (recommended)
