@@ -19,9 +19,7 @@ While this is a great security feature, it's often confusing the first time it b
 Hummingbird has built-in support for CORS through ``CORSMiddleware``. <!-- TODO: Middleware tutorial -->
 Because CORSMiddleware is a ``RouterMiddleware``, it can be applies to all - or just a subset of routes.
 
-```swift
-router.add(middleware: CORSMiddleware())
-```
+@Snippet(path: "site/Snippets/hummingbird-and-cors", slice: middleware)
 
 In the above example, the middleware is configured in its default configuration. This setup will allow all origins to make requests using a set of standard HTTP headers and methods.
 
@@ -49,15 +47,7 @@ The other variables are:
 
 Let's look at an example of how to configure the middleware.
 
-```swift
-router.add(middleware: CORSMiddleware(
-    allowOrigin: .custom("http://example.com"),
-    allowHeaders: [.accept, .contentType],
-    allowMethods: [.GET, .POST],
-    allowCredentials: true,
-    maxAge: .seconds(3600))
-)
-```
+@Snippet(path: "site/Snippets/hummingbird-and-cors", slice: custom_middleware)
 
 In the above example, the middleware is configured to allow requests from `http://example.com` using the `GET` and `POST` methods. It allows the `Accept` and `Content-Type` headers and sets the maximum age of the preflight response to 1 hour.
 
