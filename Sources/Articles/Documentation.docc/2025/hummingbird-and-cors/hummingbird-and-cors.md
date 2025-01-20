@@ -32,7 +32,7 @@ The ``CORSMiddleware`` initializer has a few parameters that you can use to conf
 There are three standard cases:
 
 - ``CORSMiddleware/AllowOrigin.all``: Allows all origins to make requests.
-- ``CORSMiddleware/AllowOrigin.custom("http://example.com")``: Allows requests from a specific origin.
+- ``CORSMiddleware/AllowOrigin.custom(_:)``: Allows requests from a specific origin.
 - ``CORSMiddleware/AllowOrigin.none``: Allows no origins to make requests.
 
 This ``CORSMiddleware/AllowOrigin`` parameter is used to specify which origins are allowed to make requests.
