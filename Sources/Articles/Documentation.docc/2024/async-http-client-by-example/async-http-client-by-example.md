@@ -39,7 +39,9 @@ let package = Package(
 
 In the `main.swift` file, import the AsyncHTTPClient library and initialize an HTTPClient instance for future use:
 
-@Snippet(path: "site/Snippets/ahc_setup")
+@Snippet(
+    path: "articles/Snippets/2024/async-http-client-by-example/setup"
+)
 
 1. Specify the event loop group provider as ``HTTPClient/EventLoopGroupProvider.singleton``, which manages the underlying ``EventLoopGroup`` for asynchronous operations.
 2. The ``HTTPClient/Configuration`` parameter is set, defining various aspects of the ``HTTPClient``'s behavior.
@@ -56,7 +58,9 @@ An HTTP request includes the method, a URL, headers providing supplementary deta
 
 Below is an illustration of how to employ the HTTP request and response objects using the AsyncHTTPClient library in Swift:
 
-@Snippet(path: "site/Snippets/ahc_request")
+@Snippet(
+    path: "articles/Snippets/2024/async-http-client-by-example/request"
+)
 
 1. A new ``HTTPClientRequest`` object is created targeting the specified URL.
 2. The HTTP request method is set to POST.
@@ -78,7 +82,9 @@ JSON requests involve sending and receiving data formatted in JSON to a server. 
 
 The following code snippet demonstrates how to encode request bodies and decode response bodies using JSON objects:
 
-@Snippet(path: "site/Snippets/ahc_json")
+@Snippet(
+    path: "articles/Snippets/2024/async-http-client-by-example/json"
+)
 
 1. Two ``Codable`` structures are defined: `Input` for the data to be sent and `Output` for receiving the JSON response.
 2. An HTTP request is created using a POST method and a `content-type: application/json` header.
@@ -93,7 +99,9 @@ The code snippet above demonstrates how to use Swift's Codable protocol to handl
 
 The AsyncHTTPClient library provides support for file downloads using the ``FileDownloadDelegate``. This feature enables asynchronous streaming of downloaded data while simultaneously reporting the download progress, as demonstrated in the following example:
 
-@Snippet(path: "site/Snippets/ahc_download")
+@Snippet(
+    path: "articles/Snippets/2024/async-http-client-by-example/download"
+)
 
 1. A ``FileDownloadDelegate`` is created to manage file downloads.
 2. Specify the download destination path.

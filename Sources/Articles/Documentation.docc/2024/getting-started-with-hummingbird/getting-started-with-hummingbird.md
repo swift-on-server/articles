@@ -75,7 +75,10 @@ You can read up on the result builder routers [here](https://docs.hummingbird.co
 
 Before adding routes, a Router is created:
 
-@Snippet(path: "site/Snippets/HummingbirdApp", slice: router)
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-hummingbird/snippets", 
+    slice: "router"
+)
 
 Notice that a "context" is provided here. An instance of this context is created for each request that passes through your Hummingbird server. The default one is ``BasicRequestContext``, but you can customise this to your needs. A context must be a concrete type, and can conform to many protocols. Through this system, you can integrate with various different libraries that need to inject or read properties.
 
@@ -83,7 +86,10 @@ Notice that a "context" is provided here. An instance of this context is created
 
 In the template, the first route has already been created. This is a `GET /health` route, as indicated in the function signature:
 
-@Snippet(path: "site/Snippets/HummingbirdApp", slice: health)
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-hummingbird/snippets", 
+    slice: "health"
+)
 
 This route is a simple health check that returns a 200 OK status code. You can test this route by navigating to `http://localhost:8080/health` in your browser. Although it returns a status code, the body is empty, meaning you'll see an empty page.
 
@@ -91,7 +97,10 @@ A route handler has two input parameters: a ``Request`` first, and the Context s
 
 Let's add a new GET route at the `/` path. This means that visiting your server at `http://localhost:8080` you'll see the response.
 
-@Snippet(path: "site/Snippets/HummingbirdApp", slice: basic_route)
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-hummingbird/snippets", 
+    slice: "basic_route"
+)
 
 Rebuild and re-run your app, using Xcode, `swift run` or your other preferred method. Note that we've changed the return type to ``String`` to return a body.
 
@@ -105,13 +114,19 @@ While returning these simple types is a nice way to get started, you'll quickly 
 
 Create a type that conforms to ``ResponseCodable``, and return that from your route handler. This type will be encoded to the response body.
 
-@Snippet(path: "site/Snippets/HummingbirdApp", slice: codable_route)
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-hummingbird/snippets", 
+    slice: "codable_route"
+)
 
 This route will return a JSON response with the message "Hello, world!" encoded within!
 
 From here, just run the app!
 
-@Snippet(path: "site/Snippets/HummingbirdApp", slice: run)
+@Snippet(
+    path: "articles/Snippets/2024/getting-started-with-hummingbird/snippets", 
+    slice: "run"
+)
 
 ## Conclusion
 

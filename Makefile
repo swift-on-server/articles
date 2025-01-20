@@ -20,3 +20,13 @@ check:
 
 format:
 	./scripts/run-swift-format.sh --fix
+
+unidoc:
+	unidoc compile -I .. \
+--ci fail-on-errors \
+--package-name articles \
+--define DARWIN
+
+unidoc-local:
+	unidoc local -i . 
+

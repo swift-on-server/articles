@@ -17,7 +17,7 @@ Unlike Leaf, which is Swift-specific, Mustache templates can be used in any lang
 First, you need to add the Swift-Mustache package to your project. You can do this by adding the following line to your `Package.swift` file:
 
 ```swift
-.package(url: "https://github.com/hummingbird-project/swift-mustache", from: "2.0.0-beta.1"),
+.package(url: "https://github.com/hummingbird-project/swift-mustache", from: "2.0.0"),
 ```
 
 Then, add the `Mustache` library to your target dependencies:

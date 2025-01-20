@@ -30,11 +30,17 @@ Add these dependencies to your executable target in your `Package.swift` file:
 
 Now, let's create a ``ClientBootstrap`` and configure it to use the ``/NIOHTTP1`` module's handlers. First, import the necessary modules:
 
-@Snippet(path: "site/Snippets/building-swiftnio-clients-01", slice: "imports")
+@Snippet(
+    path: "articles/Snippets/2024/building-swiftnio-clients/snippets", 
+    slice: "imports"
+)
 
 Then, create a ``ClientBootstrap``:
 
-@Snippet(path: "site/Snippets/building-swiftnio-clients-01", slice: "bootstrap")
+@Snippet(
+    path: "articles/Snippets/2024/building-swiftnio-clients/snippets", 
+    slice: "bootstrap"
+)
 
 This code prepares a template for creating a client channel. Let's break it down:
 
@@ -49,11 +55,17 @@ Before creating the HTTP client, it's necessary to add a few types that are need
 
 When a `connect` fails, NIO already throws an error. There is no need to catch or represent those. However, the HTTP Client might encounter errors when processing the response. Create an enum to represent these errors:
 
-@Snippet(path: "site/Snippets/building-swiftnio-clients-01", slice: "error")
+@Snippet(
+    path: "articles/Snippets/2024/building-swiftnio-clients/snippets", 
+    slice: "error"
+)
 
 Finally, add an enum to represent the state of processing the response:
 
-@Snippet(path: "site/Snippets/building-swiftnio-clients-01", slice: "partial")
+@Snippet(
+    path: "articles/Snippets/2024/building-swiftnio-clients/snippets", 
+    slice: "partial"
+)
 
 The enum if pretty simple, and is not representative of a _mature_ HTTP client implementation such as [AsyncHTTPClient](https://github.com/swift-server/async-http-client). However, it's enough to get started with building a (TCP) client.
 
@@ -61,7 +73,10 @@ The enum if pretty simple, and is not representative of a _mature_ HTTP client i
 
 Now that the necessary types have been created, create the `HTTPClient` type with a simple function that sends a request and returns the response.
 
-@Snippet(path: "site/Snippets/building-swiftnio-clients-01", slice: "client")
+@Snippet(
+    path: "articles/Snippets/2024/building-swiftnio-clients/snippets", 
+    slice: "client"
+)
 
 Let's break it down:
 
@@ -75,7 +90,10 @@ Let's break it down:
 
 In place of the TODO comment, add the code to send a request and process the response. First, create a ``HTTPRequestHead``. Note that this function does not currently support sending a body with the request. Do so by adding the following code:
 
-@Snippet(path: "site/Snippets/building-swiftnio-clients-01", slice: "executeThenClose")
+@Snippet(
+    path: "articles/Snippets/2024/building-swiftnio-clients/snippets", 
+    slice: "executeThenClose"
+)
 
 This is a structured concurrency block that sends the request:
 
@@ -84,7 +102,10 @@ This is a structured concurrency block that sends the request:
 
 Below that, receive and process the response parts as such:
 
-@Snippet(path: "site/Snippets/building-swiftnio-clients-01", slice: "httpLogic")
+@Snippet(
+    path: "articles/Snippets/2024/building-swiftnio-clients/snippets", 
+    slice: "httpLogic"
+)
 
 This sets up a state variable to keep track of the response parts received. It then 
 processes the response parts as they come in:
@@ -97,7 +118,10 @@ processes the response parts as they come in:
 
 Now that the HTTP client is complete, it's time to use it. Add the following code to the `main.swift` file:
 
-@Snippet(path: "site/Snippets/building-swiftnio-clients-01", slice: "usage")
+@Snippet(
+    path: "articles/Snippets/2024/building-swiftnio-clients/snippets", 
+    slice: "usage"
+)
 
 This creates a client and sends a GET request to `example.com`. The response is then printed to the console.
 
