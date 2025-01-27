@@ -21,7 +21,7 @@ When you're using a `for .. in` loop to iterate elements, you're always leveragi
 
 ### IteratorProtocol
 
-Sequence implementations only need to provide one function, the ``Sequence/makeIterator`` function. This function creates an ``IteratorProtocol`` that you implement as well.
+Sequence implementations only need to provide one function, the ``Sequence/makeIterator [requirement]`` function. This function creates an ``IteratorProtocol`` that you implement as well.
 
 _IteratorProtocol_ should be implemented as a `struct`, and has a single function called ``IteratorProtocol/next()``. This _mutating_ function returns the next element in the sequence.
 
@@ -113,9 +113,9 @@ The `downloadState` property is set to `downloading` before parallelising work. 
 
 ## Implementing Custom AsyncSequence
 
-You can implement your own ``AsyncSequence`` by implementing the ``AsyncSequence`` protocol. This protocol has two associated types: ``Element`` and ``AsyncIterator``. You'll need to implement the ``AsyncSequence/makeAsyncIterator()`` function and the ``AsyncIteratorProtocol``.
+You can implement your own ``AsyncSequence`` by implementing the ``AsyncSequence`` protocol. This protocol has two associated types: ``AsyncSequence/Element`` and ``AsyncSequence/AsyncIterator``. You'll need to implement the ``AsyncSequence/makeAsyncIterator()`` function and the ``AsyncIteratorProtocol``.
 
-First we'll define our custom ``DelayedElementEmitter`` struct. This struct will emit elements from an array with a delay between each element.
+First we'll define our custom `DelayedElementEmitter` struct. This struct will emit elements from an array with a delay between each element.
 
 @Snippet(path: "site/Snippets/advanced-async-sequences", slice: "delayedelementemitter")
 
@@ -129,7 +129,7 @@ You can now use this custom ``AsyncSequence`` in your code. The following exampl
 
 @Snippet(path: "site/Snippets/advanced-async-sequences", slice: "delayedprint")
 
-Note that our custom ``DelayedElementEmitter`` cannot be iterated upon without a `try` keyword to handle errors. This is because the ``AsyncIteratorProtocol/next()`` function can throw errors due to being marked as `throws`. We can also handle the ``CancellationError``s that ``Task.sleep(for:tolerance:clock:)`` throws in the `next()` function.
+Note that our custom `DelayedElementEmitter` cannot be iterated upon without a `try` keyword to handle errors. This is because the ``AsyncIteratorProtocol/next()`` function can throw errors due to being marked as `throws`. We can also handle the ``CancellationError``s that ``Task.sleep(for:tolerance:clock:)`` throws in the `next()` function.
 
 ```swift
 mutating func next() async -> Element? {
@@ -155,7 +155,7 @@ The ``AsyncIteratorProtocol/next()`` function can be cancelled by the consumer. 
 
 It is expected that Async Sequences handle cancellation gracefully as appropriate. In Networking, this could mean cancelling a network request. In a generator, this could mean stopping the generation of new elements through ``AsyncStream.Continuation.finish()``.
 
-To detect a cancellation signal, use ``withTaskCancellationHandler(operation:onCancel:)``. Or when using Swift Service Lifecycle, use ``withTaskCancellationOrGracefulShutdownHandler(operation:onCancelOrGracefulShutdown:)``.
+To detect a cancellation signal, use ``withTaskCancellationHandler(operation:onCancel:isolation:)``. Or when using Swift Service Lifecycle, use ``withTaskCancellationOrGracefulShutdownHandler(isolation:operation:onCancelOrGracefulShutdown:)``.
 
 ## Changes in Swift 6
 

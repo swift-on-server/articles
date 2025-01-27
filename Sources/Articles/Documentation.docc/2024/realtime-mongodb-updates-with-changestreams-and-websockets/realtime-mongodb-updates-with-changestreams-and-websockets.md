@@ -21,7 +21,7 @@ Make sure you have MongoDB running locally before starting.
 
 ## The Connection Manager
 
-The ``ConnectionManager`` handles WebSocket connections and MongoDB change notifications:
+The `ConnectionManager` handles WebSocket connections and MongoDB change notifications:
 
 @Snippet(path: "site/Snippets/realtime-mongodb-app", slice: "connection-manager")
 
@@ -36,7 +36,7 @@ The use of `withRegisteredClient` ensures that the WebSocket connection is prope
 
 ### Watching for Changes
 
-Now that the ``ConnectionManager`` is implemented, we can watch for changes in the MongoDB database. For this, we'll tie the ``ConnectionManager`` to the application lifecycle using the ``Service`` protocol.
+Now that the `ConnectionManager` is implemented, we can watch for changes in the MongoDB database. For this, we'll tie the `ConnectionManager` to the application lifecycle using the ``Service`` protocol.
 
 @Snippet(path: "site/Snippets/realtime-mongodb-app", slice: "watch-changes")
 
@@ -112,10 +112,10 @@ You've learned how to create a real-time feed of MongoDB changes using ChangeStr
 
 @Comment {
     Primary Keyword: mongodb changestream swift
-    Secondary Keywords: 
+    Secondary Keywords:
     - swift websocket mongodb
     - real-time mongodb updates
     - mongodb swift streaming
     - swift websocket server
     - mongodb changestream tutorial
-} 
+}

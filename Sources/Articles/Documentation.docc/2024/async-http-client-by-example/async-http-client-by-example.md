@@ -3,7 +3,7 @@
 Swift ``/AsyncHTTPClient`` is an HTTP client library built on top of SwiftNIO. It provides a solid solution for efficiently managing HTTP requests by leveraging the Swift Concurrency model, thus simplifying networking tasks for developers.
 
 The library's asynchronous and non-blocking request methods ensure that network operations do not hinder the responsiveness of the application. Additionally, the library offers TLS support, automatic HTTP/2 over HTTPS and several other convenient features.
- 
+
 The AsyncHTTPClient library is a comprehensive tool for seamless HTTP communication for server-side Swift applications. Throughout this article, we'll delve into practical [examples](https://github.com/swift-on-server/async-http-client-by-example-sample) to showcase the capabilities of this library.
 
 
@@ -45,9 +45,9 @@ In the `main.swift` file, import the AsyncHTTPClient library and initialize an H
 2. The ``HTTPClient/Configuration`` parameter is set, defining various aspects of the ``HTTPClient``'s behavior.
 3. ``HTTPClient/Configuration/RedirectConfiguration`` is specified to follow redirects up to a maximum of 3 times and disallow redirect cycles.
 4. Set ``HTTPClient/Configuration/Timeout``s for different phases of the HTTP request process, such as connection establishment, reading, and writing.
-5. Cleanup by calling the ``HTTPClient/shutdown() [96AYW]`` method on the HTTPClient instance.
+5. Cleanup by calling the ``HTTPClient/shutdown() -> ()`` method on the HTTPClient instance.
 
-Please be aware that it is essential to properly terminate the HTTP client after executing requests. Forgetting to invoke the ``HTTPClient/shutdown() [96AYW]`` method may cause the library to issue a warning about a potential memory leak when compiling the application in debug mode.
+Please be aware that it is essential to properly terminate the HTTP client after executing requests. Forgetting to invoke the ``HTTPClient/shutdown() -> ()`` method may cause the library to issue a warning about a potential memory leak when compiling the application in debug mode.
 
 
 ## Performing HTTP requests
@@ -85,7 +85,7 @@ The following code snippet demonstrates how to encode request bodies and decode 
 3. The `Input` data is encoded into JSON data using a ``ByteBuffer`` and set as the request body.
 4. If the response status is ok and the content type is JSON, the response body is processed.
 5. The response body chunks are collected asynchronously using ``AsyncSequence.collect(upTo:)``
-6. The buffer containing the JSON data response is decoded as an `Output` structure using ``JSONDecoder.decode(_:from:) [7481W]``.
+6. The buffer containing the JSON data response is decoded as an `Output` structure using ``JSONDecoder.decode(_:from:) (_, ByteBuffer)``.
 
 The code snippet above demonstrates how to use Swift's Codable protocol to handle JSON data in HTTP communication. It defines structures for input and output data, sends a POST request with JSON payload, and processes the response by decoding JSON into a designated output structure.
 
@@ -95,12 +95,12 @@ The AsyncHTTPClient library provides support for file downloads using the ``File
 
 @Snippet(path: "site/Snippets/ahc_download")
 
-1. A ``FileDownloadDelegate`` is created to manage file downloads. 
+1. A ``FileDownloadDelegate`` is created to manage file downloads.
 2. Specify the download destination path.
 3. A progress reporting function is provided to monitor the download progress.
 4. The file download request is executed using the request URL and the delegate.
 
-Running this example will display the download progress, indicating the received bytes and the total bytes, with the same information also available within the `fileDownloadResponse` object. 
+Running this example will display the download progress, indicating the received bytes and the total bytes, with the same information also available within the `fileDownloadResponse` object.
 
 There are many more configuration options available for the Swift AsyncHTTPClient library. It is also possible to create custom delegate objects; additional useful examples and code snippets are provided in the project's [README on GitHub](https://github.com/swift-server/async-http-client).
 

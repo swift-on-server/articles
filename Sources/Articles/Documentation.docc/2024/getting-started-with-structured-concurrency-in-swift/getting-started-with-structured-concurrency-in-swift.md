@@ -134,7 +134,7 @@ Now, a common request; "How can I await the delivery of these books concurrently
 
 A task is a concurrent unit of work. In concurrency, many tasks can run in parallel.
 
-The _easiest_ way to create a task is using the **unstructured** `Task` type. It's used to run a piece of code concurrently in the background, similar to `DispatchQueue.global().async {}`. In addition, you can manage it's lifecycle by `cancel()`ing it. Finally, you can also `await` its `value` for it to finish. 
+The _easiest_ way to create a task is using the **unstructured** `Task` type. It's used to run a piece of code concurrently in the background, similar to `DispatchQueue.global().async {}`. In addition, you can manage it's lifecycle by `cancel()`ing it. Finally, you can also `await` its `value` for it to finish.
 
 @Snippet(path: "site/Snippets/getting-started-concurrency-buy-books", slice: "buyBooksInBackground")
 
@@ -227,7 +227,7 @@ When finding yourself in a situation where you need to delay a task, you can use
 try await Task.sleep(for: .seconds(10))
 ```
 
-An extra feature of `Task.sleep` is that it can be cancelled. If the task is 
+An extra feature of `Task.sleep` is that it can be cancelled. If the task is
 cancelled while it's sleeping, the sleep will be interrupted and throw a ``CancellationError``.
 
 ### Cancellation Handlers
@@ -273,7 +273,7 @@ func buyBooks() async throws {
 
 This is a structured way to run multiple pieces of work concurrently. It's clear when the tasks start and when they end. You can run many pieces of work in parallel. And you can await all tasks being completed, and get an error if any one of them fails.
 
-The above task group can throw errors, but not all task groups need to throw. If you use ``withTaskGroup(of:returning:body:)``, you'll be able to run tasks that don't throw, and you won't need to handle errors.
+The above task group can throw errors, but not all task groups need to throw. If you use ``withTaskGroup(of:returning:isolation:body:)``, you'll be able to run tasks that don't throw, and you won't need to handle errors.
 
 In the above example, `withThrowingTaskGroup(of: Book.self)` specifies that each task _must_ produce a `Book` result if successful. In some cases, the result of the task is not necessary. In this case however, the results are helpful to collect the books that were bought.
 
@@ -298,7 +298,7 @@ func buyBooks() async throws -> [Book] {
 
 ### Discarding Task Groups
 
-In some cases, you might not be interested in the result of the task group. For example, you might want to run a number of tasks concurrently, but these tasks don't return results. In that case, you can use ``withDiscardingTaskGroup(returning:body:)`` and ``withThrowingDiscardingTaskGroup(returning:body:)`` from iOS 17 and macOS 14. This is a structured way to run multiple pieces of work concurrently, without needing to retain results.
+In some cases, you might not be interested in the result of the task group. For example, you might want to run a number of tasks concurrently, but these tasks don't return results. In that case, you can use ``withDiscardingTaskGroup(returning:isolation:body:)`` and ``withThrowingDiscardingTaskGroup(returning:isolation:body:)`` from iOS 17 and macOS 14. This is a structured way to run multiple pieces of work concurrently, without needing to retain results.
 
 The regular task groups create a collection of results, which you can then iterate over. In some cases, such as a TCP server, this collection of results is not needed and grow indefinitely. In that case, you'll want to use a discarding task group to prevent an ever-growing collection of results. Note that `Void` results are still stored and occupy a small amount of memory!
 

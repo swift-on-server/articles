@@ -35,7 +35,7 @@ As you see, there are four steps to forward a request:
 3. Execute the request using ``HTTPClient``.
 4. Forward the ``Response`` back to the end user.
 
-In both step 2 and step 4, the HTTP body is passed along as a stream, or specifically an ``AsyncSequence<ByteBuffer>``. This allows SwiftNIO to pass along the data efficiently, whilst applying backpressure in both directions (client and remote).
+In both step 2 and step 4, the HTTP body is passed along as a stream, or specifically an ``AsyncSequence`` of ``ByteBuffer``. This allows SwiftNIO to pass along the data efficiently, whilst applying backpressure in both directions (client and remote).
 
 Due to the design of Hummingbird, where bodies are always streamed, this is not just an efficient solution but also the easiest to implement.
 
