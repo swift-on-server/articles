@@ -455,13 +455,13 @@ Thankfully this won't be frequent and theoretically shouldn't happen at all. It'
 
 To avoid this issue, you have 3 options. Doing any one of them will suffice:
 
-1- Using `!(github.run_attempt > 1)` in an `if` condition so reruns of the same job don't try to restore any caches at all, and result in a clean build.
+1- Using `runner.debug != '1'` in an `if` condition so debug reruns of the same job don't try to restore any caches at all, and result in a clean build.
 
-This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions UI, and have a clean build.
+This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions UI, check the "Enable debug logging" box, and have a clean build.
 
 ```diff
       - name: Restore .build
-+        if: ${{ !(github.run_attempt > 1) }}
++        if: ${{ runner.debug != '1' }}
         id: "restore-build"
         uses: actions/cache/restore@v4
         with:
@@ -469,6 +469,8 @@ This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions U
           key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
           restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
 ```
+
+![Trigger a Debug Re-run in GitHub UI](trigger-debug-rerun-in-github-ui.png)
 
 2- Using [this](https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy) workflow to delete all saved caches, so `Restore .build` step doesn't find anything to restore, and your build starts from a clean state.
 
