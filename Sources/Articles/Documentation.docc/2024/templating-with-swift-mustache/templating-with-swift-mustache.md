@@ -37,7 +37,7 @@ Here's an example of a simple Mustache template:
 </main>
 ```
 
-Create a `templates` directory in your project, and save this template as `short-port.mustache` in the `templates` directory.
+Create a `templates` directory in your project, and save this template as `short-post.mustache` in the `templates` directory.
 
 In this template, `{{ title }}` and `{{ body }}` are placeholders for dynamic content. You can fill in these placeholders with actual values using the `Mustache` library.
 
