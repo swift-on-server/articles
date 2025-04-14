@@ -169,7 +169,7 @@ This is thanks to "Restore .build" only taking half the previous time at **15 se
 
 This 4 minutes of CI runtime includes **100 seconds** of tests runtime as well! If your tests take less time than that, your CI will be even faster.
 
-## Decouple Build and Test-Run
+## Decouple Build and Tests-Run
 
 A logical problem in your current tests CI file is that if the tests fail, GitHub Actions will end the run and the "Cache .build" step won't be triggered.
 
@@ -476,8 +476,72 @@ This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions U
 
 ![Delete Cache In GitHub UI](delete-caches-in-github-ui.png)
 
-## RunsOn machines - runson/cache (If sponsored)
+## Using Self-Hosted Runners With RunsOn
 
-- Sometimes your project is too big and GitHub Actions runner runs out of memory, and you'll have to use bigger runners.
+Sometimes your project is too big and the GitHub Actions runner runs out of memory. Or maybe you just want better CI times.
 
-- Or maybe you simply want better CI times.
+The easiest way to solve these problems is to upgrade your runner with more CPU cores and more RAM.
+
+GitHub provides you with 2 options: Paid GitHub-hosted runners or self-hosted runners.
+
+That's when [RunsOn](https://runs-on.com/) comes in. You should use RunsOn runners as your self-hosted runners, because:
+
+- It's around [10x cheaper](https://runs-on.com/pricing/) than the paid GitHub-hosted runners.
+
+- Installation and moving your GitHub Actions infrastructure to RunsOn is easy.
+
+- You can use any [AWS EC2 instance](https://aws.amazon.com/ec2/instance-types/) that you want.
+
+- EC2 instances with the same specs of GitHub-hosted runners are not only cheaper, but faster too.
+
+- RunsOn lives in your own AWS account: Your code and secrets never leave your infrastructure.
+
+While this is a sponsored section with the earnings going towards the Swift OpenSource ecosystem, it's also an accurate advertisement with no exaggerations.
+
+I - the article author - was using RunsOn long before the writing of this article. I simply found this article to be a great opportunity to spread the word in a collaboration.
+
+At Vapor we're also using EC2 instances through RunsOn to run benchmarks. EC2 instances are much more reliable for CPU benchmarks than the noisy GitHub-hosted runners.
+
+To give you an idea of how much RunsOn costs, I ran 96 jobs when trying to set up Vapor's benchmarking CI. It cost less than $0.5 on the latest-generation c8g EC2 spot instances with 2 CPU cores and 4 GB of RAM, each run taking around 2.5 minutes. That's excluding the $1.5-$5 monthly cost of RunsOn's AppRunner service, and the possible [RunsOn license flat-fee](https://runs-on.com/pricing/#license-types) that you might need to pay.
+
+Now you know RunsOn. After installing RunsOn, moving your CI files to RunsOn is trivial:
+
+```diff
+
+name: deploy
+
+on:
+
+ push: { branches: [main] }
+
+jobs:
+
+ deploy:
+
+- runs-on: ubuntu-latest
+
++ runs-on:
+
++ - runs-on=${{ github.run_id }}
+
++ - runner=2cpu-linux-x64
+
++ - extras=s3-cache
+
+ steps:
+
++ - name: Configure RunsOn
+
++ uses: runs-on/action@v1
+
+ # Other steps ...
+
+```
+
+The first change you'll make is to modify the machine instance to a RunsOn EC2 instance. You should also enable [RunsOn's Magic Cache](https://runs-on.com/caching/magic-cache/) feature with `extras=s3-cache`.
+
+After that you'll need to add the RunsOn configuration step as the first step of your CI file to install the Magic Cache. This way RunsOn saves your caches to a S3 bucket. Using S3 buckets is cheap. They're also faster than GitHub Actions' cache, and have no size limits as opposed to GitHub Actions' 10GB limit.
+
+Don't forget to modify your tests CI file to be RunsOn-compatible too.
+
+And that's it. Using RunsOn is that simple.
