@@ -4,9 +4,9 @@ Swift has a lot of power points, but the performance of the build system is not 
 
 By optimizing your CI runtime you'll save precious developer time as well as either paying less for CI or consuming less of your GitHub Actions free quota.
 
-In this article, you'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14 minutes 30 seconds in deployments, down to less than 4 minutes for tests CI, and 3 minutes for deployments. The bigger your project is, the bigger the gap will be.
+In this article, you'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14.5 minutes in deployments, down to less than 4 minutes for tests CI, and 3 minutes for deployments. The bigger your project is, the bigger the gap will be.
 
-To follow along and after cloning Vapor's Penny Bot, you should checkout the same code that this article is based on: `git checkout swift-on-server-article`
+To follow along, you should checkout the same code that this article is based on: `git checkout swift-on-server-article`.
 
 ## The Problem
 
@@ -32,10 +32,9 @@ jobs:
       # Process the code coverage report, etc...
 ```
 
-
 For deployments you'd use a CI file like below in combination with [Vapor](https://github.com/vapor/template/blob/main/Dockerfile) or [Hummingbird](https://github.com/hummingbird-project/template/blob/main/Dockerfile) template's Dockerfile.
 
-This enables you to deploy your apps to cloud services that consume Docker images, such as AWS ECS, or DigitalOcean App Platform.
+This enables you to deploy your apps to cloud services that consume Docker images, such as AWS ECS or DigitalOcean App Platform.
 
 ```yaml
 name: deploy
@@ -55,14 +54,14 @@ jobs:
       # Push the image to a Docker container registry and deploy the app
 ```
 
-These CIs usually take 10 minutes in tests and 14 minutes 30 seconds for deployments in [Penny](https://github.com/vapor/penny-bot).
+These CIs usually take 10 minutes in tests and 14.5 minutes for deployments in [Penny](https://github.com/vapor/penny-bot).
 
 That's too much time wasted waiting. How can you improve these CI times?
 
 ![Tests CI Initial State](tests-ci-initial.png)
 ![Deployment CI Initial State](deploy-ci-initial.png)
 
-## Use caching
+## Use Caching
 
 Luckily for you, GitHub provides an [official caching action](https://github.com/actions/cache) to leverage in your CI.
 
@@ -96,15 +95,15 @@ In the "Restore .build" step, you're using:
 
 - The `key` as a way to uniquely identify different caches. This resolves to a string like `swiftpm-tests-build-Linux-f5ded47...`.
 
-- The `restore-keys` as fallback. `actions/cache` will restore the latest cache that starts with `restore-keys`, if it can't find any caches matching `key` .
+- The `restore-keys` as fallback. `actions/cache` will restore the latest cache that starts with any of the `restore-keys`, if it can't find any caches matching `key` .
 
 Note that `actions/cache` follows some branch protection rules so it's not vulnerable to cache poisoning attacks. That means that it'll only restore a cache if it was cached from the current branch or the primary branch of your repository.
 
-After the tests process is over, you can cache the build artifacts to make sure the next CI run can leverage this fresh cache.
+After running the tests is over, you have the "Cache .build" step.
 
-So in the "Cache .build" step, you're caching your `.build` directory with the same key as the one in the "Restore .build" step.
+That's where you're using the `save` capability of `actions/cache` to save your `.build` directory using the same `key` that you used in "Restore .build".
 
-With the `if` condition, you're avoiding spending time in the cache step when you already found an exact match for the cache key in the "Restore .build" step. This is because `actions/cache` rejects cache entries with duplicate keys, and does not have an update mechanism.
+With the `if` condition, you're avoiding spending time in the cache step when you already found an exact match for the cache key in the "Restore .build" step. This is because `actions/cache` rejects saving cache entries with duplicate keys, and does not have an update mechanism.
 
 This `if` statement will still evaluate to `false` if "Restore .build" had to fallback to `restore-keys` to find a cache.
 
@@ -124,23 +123,23 @@ This is assuming both your restore and cache steps are triggered, which is not a
 
 ![Tests CI With Cache](tests-ci-with-cache.png)
 
-You've already saved at least 3 and a half minutes of CI runtime, and that's great. But let's look closer.
+You've already saved at least 3.5 minutes of CI runtime, and that's great. But let's look closer.
 
-What's consuming the CI runtime now that you're using caching? Is it really taking 6 and a half minutes for the tests to run even after all your efforts?
+What's consuming the CI runtime now that you're using caching? Is it really taking 6.5 minutes for the tests to run even after all your efforts?
 
-The answer is No. If you look at the "Restore .build" step, you'll notice it's taking around 30 seconds to restore the data. Likewise, "Cache .build" step of the first run of your CI is taking more than 2 and a half minutes caching around 1.5 GB worth of `.build` data. That's while your Swift tests runtime has dropped to less than 3 minutes.
+The answer is No. If you look at the "Restore .build" step, you'll notice it's taking around 30 seconds to restore the data. Likewise, "Cache .build" step of the first run of your CI is taking more than 2.5 minutes caching around 1.5 GB worth of `.build` data.
 
-Wouldn't it be so nice if you could decrease the times spent caching? After all, only 3 minutes of your CI runtime is related to your test steps.
+Wouldn't it be so nice if you could decrease the times spent caching? After all, only 3 minutes of your CI runtime is related to your tests step.
 
 ## Speed Up Caching With zstd
 
-As it turns out, `actions/cache` compresses directories before uploading them to GitHub. This compression process uses `gzip` by default. Considering `gzip` does not run in parallel, it can easily take 2 and a half minutes to compress and upload a 1.5 GB `.build` directory.
+As it turns out, `actions/cache` compresses directories before uploading them to GitHub. This compression process uses `gzip` by default. Considering `gzip` runs on a single CPU core, it can easily take 2.5 minutes to compress and upload a 1.5 GB `.build` directory.
 
 The hope is not lost though. The good news is that `actions/cache` detects if the `zstd` compression algorithm is available on the machine, and if so, it'll use that instead of `gzip`.
 
-For your purposes `zstd` is much more performant than `gzip`. Even `gzip`'s parallel implementation known as `pigz` is slower than `zstd` in this case.
+For your purposes `zstd` is much faster than `gzip`. Even `gzip`'s parallel implementation known as `pigz` is noticeably slower than `zstd` in this case.
 
-Simply install `zstd` on the machine before any calls to `actions/cache`. This way `actions/cache` can detect and use it:
+Simply install `zstd` on the machine before any calls to `actions/cache`. This way `actions/cache` can detect and use `zstd`:
 
 ```diff
 +      - name: Install zstd
@@ -164,9 +163,9 @@ Run the tests CI twice, so the second run can leverage the `zstd` cache and give
 
 ![Tests CI With ZSTD](tests-ci-with-zstd.png)
 
-Take another look at your CI times. The whole CI is running in **4 minutes**, down from 6 and a half minutes.
+Take another look at your CI times. The whole CI is running in **4 minutes**, down from 6.5 minutes.
 
-This is thanks to "Restore .build" only taking half the previous time at **15 seconds**. "Cache .build" is also taking less than **30 seconds**, down from the previous 2 minutes and a half.
+This is thanks to "Restore .build" only taking half the previous time at **15 seconds**. "Cache .build" is also taking less than **30 seconds**, down from the previous 2.5 minutes.
 
 This 4 minutes of CI runtime includes **100 seconds** of tests runtime as well! If your tests take less time than that, your CI will be even faster.
 
@@ -221,7 +220,7 @@ How can you overcome this issue?
 
 There are a few tricks you haven't utilized yet.
 
-Change your "Build package" and "Run unit tests" streps to the following:
+Change your "Build package" and "Run unit tests" steps to the following:
 
 ```yaml
       - name: Build package
@@ -345,7 +344,7 @@ RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
 RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
 ```
 
-Make sure you substitute `App` in the Dockerfile below if you've changed your main executable's name from the default `App` to something else.
+Make sure you substitute `App` in the Dockerfile above if you've changed your main executable's name from the default `App` to something else.
 
 You're no longer building your app in the Dockerfile. You copy the whole repository to the Dockerfile like before but unlike before you expect the repository to already contain the build artifacts and the executable.
 
@@ -411,7 +410,6 @@ jobs:
 +          chmod a+r /etc/apt/keyrings/docker.gpg
 +
 +          # Add the repository to Apt sources:
-+          # shellcheck source=/dev/null
 +          echo \
 +            "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
 +              \"$(. /etc/os-release && echo "$VERSION_CODENAME")\" stable" |
@@ -425,7 +423,7 @@ jobs:
         run: docker build --network=host -t app:latest .
 ```
 
-Make sure you substitute `App` in the Dockerfile below if you've changed your main executable's name from the default `App` to something else.
+Make sure you substitute `App` in the CI file above if you've changed your main executable's name from the default `App` to something else.
 
 Most of the new steps look familiar to you. You've already used them to speed up your tests CI.
 
@@ -443,17 +441,17 @@ Rerun the deployment CI twice to make sure the cache is populated.
 
 ![Deployment CI With Cache](deploy-ci-with-cache.png)
 
-It's now taking a mere **3 minutes** for the deployment CI to finish, down from 14 minutes 30 seconds!
+It's now taking a mere **3 minutes** for the deployment CI to finish, down from 14.5 minutes!
 
 ## When Things Go Wrong
 
-Sometimes some inconsistency in the cached .build directory and what Swift expects, can result in build failures.
+Sometimes some inconsistency in the cached .build directory and what Swift expects, will result in build failures.
 
 This usually manifests as weird build failures such as linker errors like 'undefined reference to ...'. Other times there are no helpful error logs, or the error logs point to something that should no longer exists.
 
 Thankfully this won't be frequent and theoretically shouldn't happen at all. It's also easy to work around.
 
-To avoid this issue, you have 3 options. Doing any one of them will suffice:
+To account for this issue, you have 3 options. Doing any one of them will suffice:
 
 1- Using `runner.debug != '1'` in an `if` condition so debug reruns of the same job don't try to restore any caches at all, and result in a clean build.
 
