@@ -16,7 +16,10 @@ Finally, you can forward every request by intercepting them all in a custom ``HT
 
 Each of these solutions will need to import the necessary modules:
 
-@Snippet(path: "site/Snippets/hummingbird-2-proxy", slice: "imports")
+@Snippet(
+    path: "articles/Snippets/2024/how-to-build-a-proxy-server-with-hummingbird/snippets", 
+    slice: "imports"
+)
 
 ## Forwarding Requests
 
@@ -26,7 +29,10 @@ To forward a request, you need to create a new ``HTTPClientRequest`` as defined 
 
 The HTTP Client is swappable in this function, but the rest of this tutorial will use the ``HTTPClient.shared``.
 
-@Snippet(path: "site/Snippets/hummingbird-2-proxy", slice: "forwarding")
+@Snippet(
+    path: "articles/Snippets/2024/how-to-build-a-proxy-server-with-hummingbird/snippets", 
+    slice: "forwarding"
+)
 
 As you see, there are four steps to forward a request:
 
@@ -45,27 +51,42 @@ The first option is to create a route on the ``Router`` that will intercept the 
 
 Since the code is the same as the previous example, we will only need to invoke the `forward` function from within this middleware.
 
-@Snippet(path: "site/Snippets/hummingbird-2-proxy", slice: "route")
+@Snippet(
+    path: "articles/Snippets/2024/how-to-build-a-proxy-server-with-hummingbird/snippets", 
+    slice: "route"
+)
 
 ### Middleware
 
 For the second option you need to create a new ``RouterMiddleware``. This middleware will intercept the request and forward it to the target server.
 
-@Snippet(path: "site/Snippets/hummingbird-2-proxy", slice: "middleware")
+@Snippet(
+    path: "articles/Snippets/2024/how-to-build-a-proxy-server-with-hummingbird/snippets", 
+    slice: "middleware"
+)
 
 Then, once the middleware is set up, you can ``Router.add(middleware:)`` to the router.
 
-@Snippet(path: "site/Snippets/hummingbird-2-proxy", slice: "middleware-router")
+@Snippet(
+    path: "articles/Snippets/2024/how-to-build-a-proxy-server-with-hummingbird/snippets", 
+    slice: "middleware-router"
+)
 
 ### Custom Responder
 
 The final option will implement an ``HTTPResponder``.
 
-@Snippet(path: "site/Snippets/hummingbird-2-proxy", slice: "responder")
+@Snippet(
+    path: "articles/Snippets/2024/how-to-build-a-proxy-server-with-hummingbird/snippets", 
+    slice: "responder"
+)
 
 Then, you can set up the responder in the ``Application``.
 
-@Snippet(path: "site/Snippets/hummingbird-2-proxy", slice: "setup-responder")
+@Snippet(
+    path: "articles/Snippets/2024/how-to-build-a-proxy-server-with-hummingbird/snippets", 
+    slice: "setup-responder"
+)
 
 ## Conclusion
 

@@ -23,7 +23,10 @@ Make sure you have MongoDB running locally before starting.
 
 The `ConnectionManager` handles WebSocket connections and MongoDB change notifications:
 
-@Snippet(path: "site/Snippets/realtime-mongodb-app", slice: "connection-manager")
+@Snippet(
+    path: "articles/Snippets/2024/realtime-mongodb-updates-with-changestreams-and-websockets/snippets", 
+    slice: "connection-manager"
+)
 
 1. The manager is an actor to ensure thread-safe access to connections
 2. It maintains a dictionary of active WebSocket connections
@@ -38,7 +41,10 @@ The use of `withRegisteredClient` ensures that the WebSocket connection is prope
 
 Now that the `ConnectionManager` is implemented, we can watch for changes in the MongoDB database. For this, we'll tie the `ConnectionManager` to the application lifecycle using the ``Service`` protocol.
 
-@Snippet(path: "site/Snippets/realtime-mongodb-app", slice: "watch-changes")
+@Snippet(
+    path: "articles/Snippets/2024/realtime-mongodb-updates-with-changestreams-and-websockets/snippets", 
+    slice: "watch-changes"
+)
 
 1. Get a reference to the posts collection
 2. Create a change stream watching for post changes
@@ -53,7 +59,10 @@ This flow is very scalable, as only one ChangeStream is created and maintained p
 
 Let's create the main application entry point:
 
-@Snippet(path: "site/Snippets/realtime-mongodb-app", slice: "main")
+@Snippet(
+    path: "articles/Snippets/2024/realtime-mongodb-updates-with-changestreams-and-websockets/snippets", 
+    slice: "main"
+)
 
 1. Connect to MongoDB
 2. Create the connection manager
@@ -64,7 +73,10 @@ Let's create the main application entry point:
 
 ### Adding Routes
 
-@Snippet(path: "site/Snippets/realtime-mongodb-app", slice: "routes")
+@Snippet(
+    path: "articles/Snippets/2024/realtime-mongodb-updates-with-changestreams-and-websockets/snippets", 
+    slice: "routes"
+)
 
 This snippet adds a POST route to the application that creates a new post in the database. That process then triggers the change streams, which broadcast to all connected clients.
 

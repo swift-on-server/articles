@@ -27,11 +27,17 @@ _IteratorProtocol_ should be implemented as a `struct`, and has a single functio
 
 A common way to consume sequences and iterators is the `for .. in` syntax:
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "iterateSequence")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "iterateSequence"
+)
 
 Swift uses some syntax sugar in the above example, and unwinds that code behind the scenes:
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "unwrappedSequenceIterator")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "unwrappedSequenceIterator"
+)
 
 The ``IteratorProtocol/next()`` function returns the Element as an ``Optional``. The sequence ends when the 'next' element is `nil`.
 
@@ -43,11 +49,17 @@ While Sequences commonly represent a collection of elements, there's no hard req
 
 This enables the following syntax:
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "iterateAsyncSequence")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "iterateAsyncSequence"
+)
 
 This unwinds to the following code:
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "unwrappedAsyncSequenceIterator")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "unwrappedAsyncSequenceIterator"
+)
 
 The simplest AsyncSequence you can create is ``AsyncStream``, which we'll cover later.
 
@@ -61,7 +73,10 @@ This is extremely helpful for using an AsyncSequence in networking operations - 
 The throwing counterpart to ``AsyncStream`` is ``AsyncThrowingStream``, which we'll also cover later.
 You can iterate over throwing async sequences in a similar way to non-throwing async sequences:
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "iterateAsyncThrowingSequence")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "iterateAsyncThrowingSequence"
+)
 
 Some libraries such as [MongoKitten](https://github.com/orlandos-nl/MongoKitten) use a throwing ``AsyncSequence`` to provide a stream of documents from a MongoDB collection. Since network errors can occur at any point, these errors are thrown from the iterator.
 
@@ -69,7 +84,10 @@ Some libraries such as [MongoKitten](https://github.com/orlandos-nl/MongoKitten)
 
 The simplest way to create an ``AsyncSequence`` is to use ``AsyncStream``. This is a stream of elements that you can append to, and iterate over. The main way to create an ``AsyncSequence`` is to use the static ``AsyncStream/makeStream(of:bufferingPolicy:)`` function.
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "makeAsyncStream")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "makeAsyncStream"
+)
 
 The two arguments of the function have a default value. `of:` specifies the type of element that this stream carries. This is currently being inferred to ``Int`` through generics.
 
@@ -81,7 +99,10 @@ You can add elements to the stream using the ``AsyncStream.Continuation/yield(_:
 
 To create an AsyncStream, first you need to define the type of elements that the stream will carry. In this case, a custom Event is being defined.
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "uievent")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "uievent"
+)
 
 After creating the stream, you can yield events to the stream. This is done by calling the `yield` function on the continuation. The follwing example shows how to yield an event when a button is tapped in SwiftUI. Note that these practices can be used in any Swift codebase, including on Linux and Windows.
 
@@ -99,7 +120,10 @@ struct StartDownloadView: View {
 
 By leveraging the structured nature of Swift's concurrency model, we can predict the behavior of our code more easily. For example, when a user taps the button twice, we can be sure that the stream will receive two events in order.
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "appstate")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "appstate"
+)
 
 ### Parallising Work
 
@@ -107,7 +131,10 @@ The main issue in the above logic is that the `startDownload` function is preven
 
 We can rewrite the loop using a ``DiscardingTaskGroup`` to start the download in parallel with handling other events.
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "parallel")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "parallel"
+)
 
 The `downloadState` property is set to `downloading` before parallelising work. This ensures that quickly tapping the button twice can never result in two downloads happening at the same time.
 
@@ -117,17 +144,26 @@ You can implement your own ``AsyncSequence`` by implementing the ``AsyncSequence
 
 First we'll define our custom `DelayedElementEmitter` struct. This struct will emit elements from an array with a delay between each element.
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "delayedelementemitter")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "delayedelementemitter"
+)
 
 This struct needs an iterator and a function to construct that iterator. The iterator is not expected to be shared between multiple consumers, so it can be a struct.
 
 Unlike a regular ``Sequence``, the ``AsyncSequence/makeAsyncIterator()`` is expected to be called only once. While structured concurrency allows calling this function multiple times, it's not expected that a sequence supports this in practice.
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "delayedelementiterator")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "delayedelementiterator"
+)
 
 You can now use this custom ``AsyncSequence`` in your code. The following example shows how to create a sequence that emits numbers from 1 to 5 with a delay of 1 second between each number.
 
-@Snippet(path: "site/Snippets/advanced-async-sequences", slice: "delayedprint")
+@Snippet(
+    path: "articles/Snippets/2024/advanced-async-sequences/snippets", 
+    slice: "delayedprint"
+)
 
 Note that our custom `DelayedElementEmitter` cannot be iterated upon without a `try` keyword to handle errors. This is because the ``AsyncIteratorProtocol/next()`` function can throw errors due to being marked as `throws`. We can also handle the ``CancellationError``s that ``Task.sleep(for:tolerance:clock:)`` throws in the `next()` function.
 

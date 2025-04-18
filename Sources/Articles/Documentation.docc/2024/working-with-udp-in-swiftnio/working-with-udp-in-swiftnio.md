@@ -16,7 +16,10 @@ Unlike TCP, UDP sockets don't distinguish between client and server. Any client 
 
 In order to start accepting packets, bind a UDP socket to a port:
 
-@Snippet(path: "site/Snippets/working-with-udp-in-swiftnio", slice: "bootstrap")
+@Snippet(
+    path: "articles/Snippets/2024/working-with-udp-in-swiftnio/snippets", 
+    slice: "bootstrap"
+)
 
 1. First, create a ``DatagramBootstrap`` to open a UDP socket.
 2. Next, bind the socket to a port using the `bind` method.
@@ -31,7 +34,10 @@ First, start observing the socket using ``NIOAsyncChannel/executeThenClose(_:) (
 
 Inbound is a stream of incoming packets, whereas outbound is a writer that you can write packets to.
 
-@Snippet(path: "site/Snippets/working-with-udp-in-swiftnio", slice: "packets")
+@Snippet(
+    path: "articles/Snippets/2024/working-with-udp-in-swiftnio/snippets", 
+    slice: "packets"
+)
 
 1. Each packet received in `inbound` is read into a String
 2. The string is reversed, and packet back into a ByteBuffer. This is not very optimised, nor a real use case, but serves a as simple example.
