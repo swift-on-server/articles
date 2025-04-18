@@ -17,7 +17,7 @@ Unlike Leaf, which is Swift-specific, Mustache templates can be used in any lang
 First, you need to add the Swift-Mustache package to your project. You can do this by adding the following line to your `Package.swift` file:
 
 ```swift
-.package(url: "https://github.com/hummingbird-project/swift-mustache", from: "2.0.0-beta.1"),
+.package(url: "https://github.com/hummingbird-project/swift-mustache", from: "2.0.0"),
 ```
 
 Then, add the `Mustache` library to your target dependencies:
@@ -37,7 +37,7 @@ Here's an example of a simple Mustache template:
 </main>
 ```
 
-Create a `templates` directory in your project, and save this template as `short-port.mustache` in the `templates` directory.
+Create a `templates` directory in your project, and save this template as `short-post.mustache` in the `templates` directory.
 
 In this template, `{{ title }}` and `{{ body }}` are placeholders for dynamic content. You can fill in these placeholders with actual values using the `Mustache` library.
 
