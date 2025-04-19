@@ -1,10 +1,10 @@
 # Faster CI in GitHub Actions
 
-Swift has a lot of power points, but the performance of the build system is not one of them. It can easily take anything between 10 to 30 minutes for a typical Swift CI to run depending on how big the project is, what build configuration you're using, how beefy your build machines are, and other factors.
+Swift has a lot of power points, but performance of the build system is not one of them. It can easily take anything between 10 to 30 minutes for a typical Swift CI to run depending on how big the project is, what build configuration you're using, how beefy your build machines are, and other factors.
 
 By optimizing your CI runtime you'll save precious developer time as well as either paying less for CI or consuming less of your GitHub Actions free quota.
 
-In this article, you'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14.5 minutes in deployments, down to less than 4 minutes for tests CI, and 3 minutes for deployments. The bigger your project is, the bigger the gap will be.
+In this article, you'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14.5 minutes in deployments, down to less than 4 minutes in tests, and 3 minutes in deployments. The bigger your project is, the bigger the gap will be.
 
 To follow along, you should checkout the same code that this article is based on: `git checkout swift-on-server-article`.
 
@@ -447,7 +447,7 @@ It's now taking a mere **3 minutes** for the deployment CI to finish, down from 
 
 Sometimes some inconsistency in the cached .build directory and what Swift expects, will result in build failures.
 
-This usually manifests as weird build failures such as linker errors like 'undefined reference to ...'. Other times there are no helpful error logs, or the error logs point to something that should no longer exists.
+This usually manifests as weird build failures such as linker errors like 'undefined reference to ...'. Other times there are no helpful error logs, or the error logs point to something that should no longer exist.
 
 Thankfully this won't be frequent and theoretically shouldn't happen at all. It's also easy to work around.
 
