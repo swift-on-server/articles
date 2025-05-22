@@ -133,13 +133,15 @@ Wouldn't it be so nice if you could decrease the times spent caching? After all,
 
 ## Speed Up Caching With zstd
 
-As it turns out, `actions/cache` compresses directories before uploading them to GitHub. This compression process uses `gzip` by default. Considering `gzip` runs on a single CPU core, it can easily take 2.5 minutes to compress and upload a 1.5 GB `.build` directory.
+As it turns out, `actions/cache` compresses directories before uploading them to GitHub. This compression process uses [`gzip`](https://github.com/Distrotech/gzip) by default. Considering [`gzip`](https://github.com/Distrotech/gzip) runs on a single CPU core, it can easily take 2.5 minutes to compress and upload a 1.5 GB `.build` directory. This way, almost half your CI time is wasted in the cache-related operations.
 
-The hope is not lost though. The good news is that `actions/cache` detects if the `zstd` compression algorithm is available on the machine, and if so, it'll use that instead of `gzip`.
+The hope is not lost, though. The good news is that `actions/cache` detects if [`zstd`](https://github.com/facebook/zstd) is available on the machine, and if so, it'll use that instead of [`gzip`](https://github.com/Distrotech/gzip).
 
-For your purposes `zstd` is much faster than `gzip`. Even `gzip`'s parallel implementation known as `pigz` is noticeably slower than `zstd` in this case.
+[`zstd`](https://github.com/facebook/zstd) is a modern alternative to the [`gzip`](https://github.com/Distrotech/gzip) compression algorithm. It's not only much faster, but is also more effective at decreasing the file size during compression.
 
-Simply install `zstd` on the machine before any calls to `actions/cache`. This way `actions/cache` can detect and use `zstd`:
+Even [`gzip`](https://github.com/Distrotech/gzip)'s parallel implementation known as [`pigz`](https://github.com/madler/pigz) is noticeably slower than [`zstd`](https://github.com/facebook/zstd) in this case.
+
+Simply install [`zstd`](https://github.com/facebook/zstd) on the machine before any calls to `actions/cache`. This way `actions/cache` can detect and use [`zstd`](https://github.com/facebook/zstd):
 
 ```diff
 +      - name: Install zstd
@@ -159,9 +161,9 @@ Simply install `zstd` on the machine before any calls to `actions/cache`. This w
         run: swift test --enable-code-coverage
 ```
 
-Run the tests CI twice, so the second run can leverage the `zstd` cache and give you an accurate idea.
+Run the tests CI twice, so the second run can leverage the [`zstd`](https://github.com/facebook/zstd) cache and give you an accurate idea.
 
-![Tests CI With ZSTD](tests-ci-with-zstd.png)
+![Tests CI With zstd](tests-ci-with-zstd.png)
 
 Take another look at your CI times. The whole CI is running in **4 minutes**, down from 6.5 minutes.
 
