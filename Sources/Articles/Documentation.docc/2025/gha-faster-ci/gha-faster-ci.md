@@ -117,7 +117,7 @@ For the first run, don't expect any time improvements as there is simply no cach
 
 But if you re-run the CI job, you'll notice a big difference.
 
-Your tests CI runtime has drop to 6 minutes 30s, saving 3 minutes 30s.
+Your tests CI runtime has drop to 6.5 minutes, saving 3.5 minutes.
 
 This is assuming both your restore and cache steps are triggered, which is not always true thanks to the if condition you have in "Cache .build". But in a lot of CIs you'll still be restoring and uploading caches in the same CI run. For example every single time you push changes to your primary branch.
 
