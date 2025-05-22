@@ -6,7 +6,12 @@ By optimizing your CI runtime you'll save precious developer time as well as eit
 
 In this article, you'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14.5 minutes in deployments, down to less than 4 minutes in tests, and 3 minutes in deployments. The bigger your project is, the bigger the gap will be.
 
-To follow along, you should checkout the same code that this article is based on: `git checkout swift-on-server-article`.
+To follow along, you should clone [Penny](https://github.com/vapor/penny-bot) and checkout the `swift-on-server-article` tag.
+```sh
+git clone https://github.com/vapor/penny-bot.git
+cd penny-bot
+git checkout swift-on-server-article
+```
 
 ## The Problem
 
