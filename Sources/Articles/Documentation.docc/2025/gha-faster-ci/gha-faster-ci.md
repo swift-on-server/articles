@@ -255,6 +255,27 @@ Thanks to the `--build-tests` flag, you're building the test targets as well in 
 
 Finally you use `--skip-build` when running unit tests because you know you've already built the whole project.
 
+## Testing in Parallel
+
+[Penny](https://github.com/vapor/penny-bot)'s tests currently take 100 seconds to run as mentioned before, which is another factor raising the CI time.
+This is because [Penny](https://github.com/vapor/penny-bot) runs its tests one by one which means only 1 test can be running at a time.
+
+A significant optimization can be to run the tests in parallel. While parallel-testing is the default behavior in [swift-testing](https://github.com/swiftlang/swift-testing), you need to use the `--parallel` flag if your tests use [`XCTest`](https://developer.apple.com/documentation/xctest).
+
+Enabling parallel-testing is as simple as adding that flag:
+
+```diff
+      - name: Run unit tests
+-        run: swift test --skip-build --enable-code-coverage
++        run: swift test --skip-build --enable-code-coverage --parallel
+```
+
+Be warned though! If your tests use shared resources during testing, it's likely that they will start failing with parallel-testing.
+
+Enabling parallel-testing is highly encouraged, but usually takes time, effort and modifications in your testing infrastructure. For that reason, this article will continue assuming you haven't enabled parallel-testing.
+
+For comparison, in a future version of [Penny](https://github.com/vapor/penny-bot), we moved the tests to be run in parallel. [Penny](https://github.com/vapor/penny-bot)'s tests now only take **5 seconds** to run compared to the previous 100 seconds. That saves more than 1.5 minutes of CI time. Note that the time savings will vary depending on the project, and can be less, or much more.
+
 ## Cache Build Artifacts When Using A Dockerfile
 
 Your tests CI is pretty fast now and only takes around 4 minutes.
