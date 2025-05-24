@@ -504,7 +504,7 @@ This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions U
 
 ![Delete Cache In GitHub UI](delete-caches-in-github-ui.png)
 
-## Using Self-Hosted GitHub Action Runners With RunsOn
+## Using Self-Hosted GitHub Actions Runners With RunsOn
 
 Sometimes your project is too big and the GitHub Actions runner runs out of memory. Or maybe you just want better CI times.
 
