@@ -265,9 +265,7 @@ Finally you use `--skip-build` when running unit tests because you know you've a
 [Penny](https://github.com/vapor/penny-bot)'s tests currently take 100 seconds to run as mentioned before, which is another factor raising the CI time.
 This is because [Penny](https://github.com/vapor/penny-bot) runs its tests one by one which means only 1 test can be running at a time.
 
-A significant optimization can be to run the tests in parallel. While parallel-testing is the default behavior in [swift-testing](https://github.com/swiftlang/swift-testing), you need to use the `--parallel` flag if your tests use [`XCTest`](https://developer.apple.com/documentation/xctest).
-
-Enabling parallel-testing is as simple as adding that flag:
+A significant optimization can be to run the tests in parallel. While parallel-testing is the default behavior in [swift-testing](https://github.com/swiftlang/swift-testing), you need to use the `--parallel` flag if your tests use [`XCTest`](https://developer.apple.com/documentation/xctest):
 
 ```diff
       - name: Run unit tests
