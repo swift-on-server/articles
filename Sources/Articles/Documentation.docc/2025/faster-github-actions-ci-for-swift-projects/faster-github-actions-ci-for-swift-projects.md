@@ -501,35 +501,16 @@ To give you an idea of how much RunsOn costs, I ran 96 jobs when trying to set u
 Now you know RunsOn. After installing RunsOn, moving your CI files to RunsOn is trivial:
 
 ```diff
-
-name: deploy
-
-on:
-
- push: { branches: [main] }
-
 jobs:
+  unit-tests:
+-    runs-on: ubuntu-latest
++    runs-on: runs-on=${{ github.run_id }}/runner=2cpu-linux-x64/extras=s3-cache
+    container: swift:6.0-noble
+    steps:
++      - name: Configure RunsOn
++        uses: runs-on/action@v1
 
- deploy:
-
-- runs-on: ubuntu-latest
-
-+ runs-on:
-
-+ - runs-on=${{ github.run_id }}
-
-+ - runner=2cpu-linux-x64
-
-+ - extras=s3-cache
-
- steps:
-
-+ - name: Configure RunsOn
-
-+ uses: runs-on/action@v1
-
- # Other steps ...
-
+    # Other steps ...
 ```
 
 The first change you'll make is to modify the machine instance to a RunsOn EC2 instance. You should also enable [RunsOn's Magic Cache](https://runs-on.com/caching/magic-cache/) feature with `extras=s3-cache`.
