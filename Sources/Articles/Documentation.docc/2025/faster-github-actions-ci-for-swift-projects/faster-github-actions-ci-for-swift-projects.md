@@ -496,7 +496,7 @@ I - the article author - was using RunsOn long before the writing of this articl
 
 At Vapor we're also using EC2 instances through RunsOn to run benchmarks. EC2 instances are much more reliable for CPU benchmarks than the noisy GitHub-hosted runners.
 
-To give you an idea of how much RunsOn costs, I ran 96 jobs when trying to set up Vapor's benchmarking CI. It cost less than $0.5 on the latest-generation c8g EC2 spot instances with 2 CPU cores and 4 GB of RAM, each run taking around 2.5 minutes. That's excluding the $1.5-$5 monthly cost of RunsOn's AppRunner service, and the possible [RunsOn license flat-fee](https://runs-on.com/pricing/#license-types) that you might need to pay.
+To give you an idea of how much RunsOn costs, I ran 96 jobs when trying to set up Vapor's benchmarking CI. It cost less than $0.5 on the latest-generation c8g EC2 spot instances with 2 CPU cores and 4 GB of RAM, each run taking around 2.5 minutes. That's excluding the $1.5-$5 monthly cost of RunsOn's AppRunner service, and the possible [RunsOn license flat-fee](https://runs-on.lemonsqueezy.com/?aff=ngLyB) that you might need to pay.
 
 Now you know RunsOn. After installing RunsOn, moving your CI files to RunsOn is trivial:
 
