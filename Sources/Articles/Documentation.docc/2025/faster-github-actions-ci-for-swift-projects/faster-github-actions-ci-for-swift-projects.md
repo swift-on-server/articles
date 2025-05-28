@@ -490,7 +490,7 @@ That's when [RunsOn](https://runs-on.com/) comes in. You should use RunsOn runne
 
 - RunsOn lives in your own AWS account: Your code and secrets never leave your infrastructure.
 
-While this is a sponsored section with the earnings going towards the Swift OpenSource ecosystem, it's also an accurate advertisement with no exaggerations.
+While this is a sponsored section with the earnings going towards the Swift open-source ecosystem, it's also an accurate advertisement with no exaggerations.
 
 I - the article author - was using RunsOn long before the writing of this article. I simply found this article to be a great opportunity to spread the word in a collaboration.
 
@@ -539,6 +539,8 @@ After that you'll need to add the RunsOn configuration step as the first step of
 Don't forget to modify your tests CI file to be RunsOn-compatible too.
 
 And that's it. Using RunsOn is that simple.
+
+Swift on Server has partnered with RunsOn, which means if you register via this [affiliate link](https://runs-on.lemonsqueezy.com/?aff=ngLyB), we’ll receive 20% of the subscription fee. We’re committed to use the earnings towards supporting Swift open-source projects and communities.
 
 ## When Things Go Wrong
 
