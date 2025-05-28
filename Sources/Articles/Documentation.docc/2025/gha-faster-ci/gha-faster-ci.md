@@ -1,6 +1,6 @@
-# Faster CI in GitHub Actions
+# Faster GitHub Actions CI for Swift Projects
 
-Swift has a lot of power points, but performance of the build system is not one of them. It can easily take anything between 10 to 30 minutes for a typical Swift CI to run depending on how big the project is, what build configuration you're using, how beefy your build machines are, and other factors.
+Swift has a lot of power points, but performance of the build system is not one of them. It can easily take anything between 10 to 30 minutes for a typical SwiftPM CI to run depending on how big the project is, what build configuration you're using, how beefy your build machines are, and other factors.
 
 By optimizing your CI runtime you'll save precious developer time as well as either paying less for CI or consuming less of your GitHub Actions free quota.
 
