@@ -7,6 +7,7 @@ By optimizing your CI runtime you'll save precious developer time as well as eit
 In this article, you'll walk through optimizing [Vapor's Penny Bot](https://github.com/vapor/penny-bot) CI times to go from 10 minutes in tests and 14.5 minutes in deployments, down to less than 4 minutes in tests, and 3 minutes in deployments. The bigger your project is, the bigger the gap will be.
 
 To follow along, you should clone [Penny](https://github.com/vapor/penny-bot) and checkout the `swift-on-server-article` tag.
+
 ```sh
 git clone https://github.com/vapor/penny-bot.git
 cd penny-bot
@@ -469,39 +470,6 @@ Rerun the deployment CI twice to make sure the cache is populated.
 
 It's now taking a mere **3 minutes** for the deployment CI to finish, down from 14.5 minutes!
 
-## When Things Go Wrong
-
-Sometimes some inconsistency in the cached .build directory and what Swift expects, will result in build failures.
-
-This usually manifests as weird build failures such as linker errors like 'undefined reference to ...'. Other times there are no helpful error logs, or the error logs point to something that should no longer exist.
-
-Thankfully this won't be frequent and theoretically shouldn't happen at all. It's also easy to work around.
-
-To account for this issue, you have 3 options. Doing any one of them will suffice:
-
-1- Using `runner.debug != '1'` in an `if` condition so debug reruns of the same job don't try to restore any caches at all, and result in a clean build.
-
-This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions UI, check the "Enable debug logging" box, and have a clean build.
-
-```diff
-      - name: Restore .build
-+        if: ${{ runner.debug != '1' }}
-        id: "restore-build"
-        uses: actions/cache/restore@v4
-        with:
-          path: .build
-          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
-          restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
-```
-
-![Trigger a Debug Re-run in GitHub UI](trigger-debug-rerun-in-github-ui.png)
-
-2- Using [this](https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy) workflow to delete all saved caches, so `Restore .build` step doesn't find anything to restore, and your build starts from a clean state.
-
-3- Manually delete the relevant caches through GitHub Actions UI:
-
-![Delete Cache In GitHub UI](delete-caches-in-github-ui.png)
-
 ## Using Self-Hosted GitHub Actions Runners With RunsOn
 
 Sometimes your project is too big and the GitHub Actions runner runs out of memory. Or maybe you just want better CI times.
@@ -571,3 +539,36 @@ After that you'll need to add the RunsOn configuration step as the first step of
 Don't forget to modify your tests CI file to be RunsOn-compatible too.
 
 And that's it. Using RunsOn is that simple.
+
+## When Things Go Wrong
+
+Sometimes some inconsistency in the cached .build directory and what Swift expects, will result in build failures.
+
+This usually manifests as weird build failures such as linker errors like 'undefined reference to ...'. Other times there are no helpful error logs, or the error logs point to something that should no longer exist.
+
+Thankfully this won't be frequent and theoretically shouldn't happen at all. It's also easy to work around.
+
+To account for this issue, you have 3 options. Doing any one of them will suffice:
+
+1- Using `runner.debug != '1'` in an `if` condition so debug reruns of the same job don't try to restore any caches at all, and result in a clean build.
+
+This mean you'll be able to use the "Re-run jobs" button in the GitHub Actions UI, check the "Enable debug logging" box, and have a clean build.
+
+```diff
+      - name: Restore .build
++        if: ${{ runner.debug != '1' }}
+        id: "restore-build"
+        uses: actions/cache/restore@v4
+        with:
+          path: .build
+          key: "swiftpm-tests-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
+          restore-keys: "swiftpm-tests-build-${{ runner.os }}-"
+```
+
+![Trigger a Debug Re-run in GitHub UI](trigger-debug-rerun-in-github-ui.png)
+
+2- Using [this](https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy) workflow to delete all saved caches, so `Restore .build` step doesn't find anything to restore, and your build starts from a clean state.
+
+3- Manually delete the relevant caches through GitHub Actions UI:
+
+![Delete Cache In GitHub UI](delete-caches-in-github-ui.png)
