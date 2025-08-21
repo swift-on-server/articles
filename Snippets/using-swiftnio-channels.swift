@@ -38,7 +38,13 @@ func runServer() async throws {
                 // 4.
                 group.addTask {
                     // 5.
-                    try await handleClient(client)
+                    do {
+                        try await handleClient(client)
+                    } catch {
+                        // Error while handling the connection.
+                        // This needs to be silenced or gracefully handled
+                        // as `throw`ing an error here would close the TCP server
+                    }
                 }
             }
         }
