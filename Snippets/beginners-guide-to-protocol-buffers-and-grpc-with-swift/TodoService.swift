@@ -246,7 +246,9 @@ internal enum Todos_TodoService {
             internal typealias Input = Todos_Empty
             internal typealias Output = Todos_TodoList
             internal static let descriptor = GRPCCore.MethodDescriptor(
-                service: Todos_TodoService.descriptor.fullyQualifiedService,
+                service: .init(
+                    fullyQualifiedService: Todos_TodoService.descriptor.fullyQualifiedService
+                ),
                 method: "FetchTodos"
             )
         }
@@ -254,7 +256,9 @@ internal enum Todos_TodoService {
             internal typealias Input = Todos_Todo
             internal typealias Output = Todos_Todo
             internal static let descriptor = GRPCCore.MethodDescriptor(
-                service: Todos_TodoService.descriptor.fullyQualifiedService,
+                service: .init(
+                    fullyQualifiedService: Todos_TodoService.descriptor.fullyQualifiedService
+                ),
                 method: "CreateTodo"
             )
         }
@@ -262,7 +266,9 @@ internal enum Todos_TodoService {
             internal typealias Input = Todos_TodoID
             internal typealias Output = Todos_Empty
             internal static let descriptor = GRPCCore.MethodDescriptor(
-                service: Todos_TodoService.descriptor.fullyQualifiedService,
+                service: .init(
+                    fullyQualifiedService: Todos_TodoService.descriptor.fullyQualifiedService
+                ),
                 method: "DeleteTodo"
             )
         }
@@ -270,7 +276,9 @@ internal enum Todos_TodoService {
             internal typealias Input = Todos_TodoID
             internal typealias Output = Todos_Todo
             internal static let descriptor = GRPCCore.MethodDescriptor(
-                service: Todos_TodoService.descriptor.fullyQualifiedService,
+                service: .init(
+                    fullyQualifiedService: Todos_TodoService.descriptor.fullyQualifiedService
+                ),
                 method: "CompleteTodo"
             )
         }
@@ -820,7 +828,7 @@ struct Entrypoint: AsyncParsableCommand {
         let server = GRPCServer(
             transport: .http2NIOPosix(
                 address: .ipv4(host: hostname, port: port),
-                config: .defaults(transportSecurity: .plaintext)
+                config: .defaults(configure: { config in Void })
             ),
             services: [
                 // 2.
