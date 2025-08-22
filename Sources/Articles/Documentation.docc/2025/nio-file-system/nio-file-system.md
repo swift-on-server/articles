@@ -1,13 +1,16 @@
-## Working with the SwiftNIO File System: Practical Examples
+# Practical Guide to Working with the SwiftNIO File System ￼
 
-SwiftNIO is a powerful networking framework, but it also provides a modern, async-friendly file system API. The NIO file system module lets you create, read, write, and manage files and directories in a non-blocking way. 
+The SwiftNIO package serves as the backbone for many server-side Swift projects. When most people hear about SwiftNIO, they immediately think of servers or network protocols.
 
-In this article, we’ll walk through common and interesting use-cases, with clear, concise Swift examples.
+However, SwiftNIO also includes a lesser-known library: a modern, async-friendly file system API. Unlike the traditional FileManager, this API allows you to read, write, and manage files without blocking threads—making it ideal for server environments.
 
-## Setup NIOFileSystem
+This article covers the essentials: how to set up the file system module, create files, read and write data, work with directories, and explore a few advanced techniques.
 
-NIOFileSystem. This provides async APIs for interacting with the file system. Fist you have to add swift-nio as a package dependency to your target.
+## Setting up NIO File System
 
+The file system APIs are part of the `_NIOFileSystem` product, which is still considered experimental. The underscore in the module name shows that the API may change in the future, but it is already extremely useful and quite stable.
+
+Before you can use the SwiftNIO file system API, you need to add `swift-nio` as a dependency to your Swift package. Here’s how to add `_NIOFileSystem` to your `Package.swift` file:
 
 ```swift
 // swift-tools-version: 6.0
@@ -19,233 +22,289 @@ let package = Package(
         .macOS(.v15),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-nio", from: "2.0.0"),
+        .package(
+            url: "https://github.com/apple/swift-nio", 
+            from: "2.0.0"
+        ),
     ],
     targets: [
         .executableTarget(
             name: "Example",
             dependencies: [
-                .product(name: "_NIOFileSystem", package: "swift-nio"),
+                .product(
+                    name: "_NIOFileSystem", 
+                    package: "swift-nio"
+                ),
             ]
         ),
     ]
 )
 ```
 
-The _NIOFileSystem module uses an underscore in its name to show that it is not a stable, public API yet. This means the module is still under active development by the SwiftNIO team, and its features or interfaces might change in future releases. 
+Once your package manifest is set up, you can begin using the file system module in your code.
 
-Developers should be careful when using it in production, as updates could introduce breaking changes. The team is working to improve and finalize the file system module, so it's best to keep an eye on updates for more stable releases in the future.
+## Basic File Operations
 
+To begin, let’s explore some basic file operations.
 
-## Creating files
+Most file operations are handled by the `FileSystem` struct, which offers a shared instance you can use in most situations. Another helpful tool is the `FilePath` object, which lets you build file paths safely.
 
-This snippet demonstrate how to create a file. In this case we save the file to a temporary file path, then write a simple string to it. Here’s how:
+Here’s how you can create a file and write a string to it:
 
 ```swift
 import _NIOFileSystem
 
-// 1.
 let fs = FileSystem.shared
-// 2.
-var temporaryPath = try await fs.temporaryDirectory
-let path = temporaryPath.appending("hello.txt")
+var tmpPath = try await fs.temporaryDirectory
+let filePath = tmpPath.appending("hello.txt")
+let contents = "Hello, Swift NIO file system!"
 
-let contents = "Hello, NIO File System!"
-// 3.
 let bytesWritten = try await contents.write(
-    toFileAt: path,
+    toFileAt: filePath,
     options: .modifyFile(createIfNecessary: true)
 )
-
 print("Bytes written: \(bytesWritten)")
 ```
 
-1. Access the shared file system instance using `FileSystem.shared`. This instance provides async methods for file operations.
-2. It asynchronously retrieves the system’s temporary directory.
-3. The string is written to the file at the specified path using the async `write` method. The `.modifyFile(createIfNecessary: true)` option ensures the file is created if it doesn’t exist. The number of bytes written is returned and printed.
+In this example, you fetch the system’s temporary directory and build a file path by appending the filename you want.
 
-## File information
+Next, you write a string to the file using the async `write` method. The `.modifyFile(createIfNecessary: true)` option ensures the file is created if it does not already exist. The `write` method returns the number of bytes written, so you can confirm the operation succeeded.
 
-The file system API lets you check for a file’s existence and get its info. This method returns nil if the file does not exists:
+You can also check if a file exists or get details like its type or size. SwiftNIO gives you a simple way to access this information:
 
 ```swift
-if let info = try await fs.info(forFileAt: path) {
-    print("Type: \(info.type), Size: \(info.size)")
+if let info = try await fs.info(forFileAt: filePath) {
+    print("Type: \(info.type)") 
+    print("Size: \(info.size)")
 } 
 ```
 
-The info contains type, size, last modification info, permission and group and even more system level file information. You can use the type property to check if the file was a regular file or a directory or a symlink. The FileType struct has even more cases, like sockets.
+When you call `info`, you get details such as the file’s type, size, last modification date, permissions, and more. Use the `type` property to check if the path points to a regular file, directory, symlink, or other types like a socket.
+
+Always check your paths before running operations or set options to modify or create files if needed. If you don’t, the file system library will throw errors.
+
+Copying and removing files or directories are basic tasks in many applications. SwiftNIO gives you async methods to handle these operations and makes it easy to manage files and clean up resources. Here’s how you copy a file:
+
+```swift
+let copyPath = try await tmpPath.appending("copy.txt")
+try await fs.copyItem(
+    at: filePath, 
+    to: copyPath
+)
+print("File copied to: \(copyPath)")
+```
+
+You can also move an item in a single operation when the operating system supports it as an underlying syscall:
+
+```swift
+let movePath = try await tmpPath.appending("moved.txt")
+try await fs.moveItem(
+    at: filePath, 
+    to: movePath
+)
+print("File moved to: \(movePath)")
+```
+
+Here’s how you can delete a file when you no longer need it:
+
+```swift
+let removed = try await fs.removeOneItem(at: filePath)
+print("File removed: \(removed)")
+```
+
+These operations let you handle basic file-level tasks. Now, let’s turn to working with directories.
 
 ## Listing Directories
 
-The most simple way to list and iterate over a directory is by using an directory handle and the listContents function. The listContents method returns a DirectoryEntries type, which is an AsyncSequence so you can iterate over the elements using a for loop:
+Listing the contents of a directory is a common task, and SwiftNIO makes it simple with async sequences. Use a `FileSystem` instance to get a directory handle, then call `listContents` on the handle to loop through the entries.
+
+Here’s an example that prints the names of all entries in a directory:
 
 ```swift
-let homePath = FilePath("/path/to/dir")
+let dirPath = FilePath("/path/to/dir")
 
-let info = try await fs.info(forFileAt: homePath)
+// check if path is a directory
+let info = try await fs.info(forFileAt: dirPath)
 if let info, info.type == .directory {
-    try await fs.withDirectoryHandle(atPath: homePath) { dir in
+    // get directory handle and list contents
+    try await fs.withDirectoryHandle(
+        atPath: dirPath
+    ) { dir in
         for try await entry in dir.listContents() {
-            print("Found: \(entry.name)")
+            print("Item: \(entry.name)")
         }
     }
 }
 else {
-    print("not exists")
+    print("Path is not a valid directory.")
 }
 ```
 
-It's also possible to list the contents recursively and put a filter on entry types by using a where clause in the iteration:
+This code checks if the path is a directory and prints each entry inside. You can quickly adjust this approach to list only files, skip hidden items, or work recursively.
+
+To list only files and not directories, add a `where` condition in the for loop:
 
 ```swift
-
-try await fs.withDirectoryHandle(atPath: homePath) { dir in
-    let entries = dir.listContents()
-
-    for 
-        try await entry in entries 
-    where 
+try await fs.withDirectoryHandle(
+    atPath: dirPath
+) { dir in
+    for try await entry in dir.listContents() where 
         entry.type != .directory 
     {
-        print("Found: \(entry.name)")
+        print("Item: \(entry.name)")
     }
 }
 ```
 
-In this example we list directory contents recursively and print only the files.
-
-Another common use-case is to list non-hidden directories only, this is possible by putting a where clause on the name string:
+To list only non-hidden directories (on macOS, file names starting with a dot are hidden), add a filter using the name property:
 
 ```swift
-try await fs.withDirectoryHandle(atPath: homePath) { dir in
-    let entries = dir.listContents()
-
-    for
-        try await entry in entries
-    where
+try await fs.withDirectoryHandle(
+    atPath: dirPath
+) { dir in
+    for try await entry in dir.listContents() where
         entry.type == .directory &&
         !entry.name.string.hasPrefix(".")
     {
-        print("Found: \(entry.name)")
+        print("Item: \(entry.name)")
     }
 }
 ```
 
-Batch iterate, when there are too many items:
+You can also list the contents of a directory recursively. When there are many items, batching helps improve performance and reduces memory usage:
 
 ```swift
-try await fs.withDirectoryHandle(atPath: homePath) { dir in
-    let batches = dir.listContents(recursive: true).batched()
+try await fs.withDirectoryHandle(
+    atPath: dirPath
+) { dir in
+    let batches = dir.listContents(
+        recursive: true
+    ).batched()
 
     for try await batch in batches  {
         for entry in batch {
-            print("Found: \(entry.name)")
+            print("Item: \(entry.name)")
         }
     }
 }
 ```
 
-Don't forget to check if the file exists and it's a directory before you start using the handle.
+Always check that the path exists and is a directory before you get a directory handle and list its contents.
 
-## Writing and Reading Data
+## File Reading and Writing
 
-You can write data from strings, arrays, or even async sequences. To read, you can load the whole file or just a chunk.
+SwiftNIO lets you write and read data from files using strings, byte arrays, or async sequences.
 
-Write a string and read it back:
+Here’s how you can write a string to a file and then read it back:
 
 ```swift
 try await "Some text".write(
-    toFileAt: path,
+    toFileAt: filePath,
     options: .modifyFile(createIfNecessary: true)
 )
+
 let text = try await String(
-    contentsOf: path,
+    contentsOf: filePath,
     maximumSizeAllowed: .bytes(1024)
 )
 print("Read text: \(text)")
 ```
 
-Write and read a byte array:
+You can also use byte arrays, which are useful when you need to work with binary data:
 
 ```swift
 let data: [UInt8] = [1, 2, 3, 4, 5]
 try await data.write(
-    toFileAt: path,
+    toFileAt: filePath,
     options: .modifyFile(createIfNecessary: true)
 )
 let readData = try await Array(
-    contentsOf: path,
+    contentsOf: filePath,
     maximumSizeAllowed: .bytes(1024)
 )
 print("Read bytes: \(readData)")
 ```
 
-## Buffered Reading and Writing
+When working with large files or tasks that need high performance, buffered readers and writers are helpful because they process data in chunks. This approach lowers memory usage and speeds up operations. 
 
-Buffered readers and writers help with large files or performance-sensitive tasks.
+SwiftNIO includes buffered writer and reader types that work smoothly with async/await. 
 
-Buffered Writer Example:
+Here is an example of how to write a large amount of data using a buffered writer:
 
 ```swift
 try await fs.withFileHandle(
-    forReadingAndWritingAt: path,
+    forReadingAndWritingAt: filePath,
     options: .newFile(replaceExisting: true)
 ) { file in
-    var writer = file.bufferedWriter(capacity: .bytes(4096))
-    try await writer.write(contentsOf: repeatElement(42, count: 1000))
+    var writer = file.bufferedWriter(
+        capacity: .bytes(4096)
+    )
+    try await writer.write(
+        contentsOf: repeatElement(42, count: 1000)
+    )
     try await writer.flush()
 }
 ```
 
-Buffered Reader Example:
+Here is how you can read data in buffered chunks:
 
 ```swift
 try await fs.withFileHandle(forReadingAt: path) { file in
-    var reader = file.bufferedReader(capacity: .bytes(4096))
+    var reader = file.bufferedReader(
+        capacity: .bytes(4096)
+    )
     let bytes = try await reader.read(.bytes(1000))
-    print("Buffered read: \(bytes.readableBytes) bytes")
+    print("Read: \(bytes.readableBytes) bytes")
 }
 ```
 
-## Handling Symbolic Links
+Buffered reading and writing is very helpful when you need to work with files that are too large to fit into memory all at once. For more advanced cases, you can use `AsyncStream` to stream data into files efficiently. 
 
-You can create and inspect symbolic links:
-
-```swift
-let linkPath = try await fs.temporaryDirectory.appending("link.lnk")
-try await fs.createSymbolicLink(at: linkPath, withDestination: path)
-let destination = try await fs.destinationOfSymbolicLink(at: linkPath)
-print("Symlink points to: \(destination)")
-```
-
-## Copying and Removing Files
-
-Copy files or directories, and clean up when finished:
-
-```swift
-let copyPath = try await fs.temporaryDirectory.appending("copy.txt")
-try await fs.copyItem(at: path, to: copyPath)
-print("File copied to: \(copyPath)")
-
-let removed = try await fs.removeOneItem(at: copyPath)
-print("Items removed: \(removed)")
-```
-
-## Advanced: Async Sequences for Streaming Data
-
-You can write data from an ⁠AsyncStream⁠ for efficient streaming:
+Here is an example of how to write a stream of bytes to a file:
 
 ```swift
 let stream = AsyncStream(UInt8.self) { continuation in
-    for byte in 0..<64 { continuation.yield(byte) }
+    for byte in 0..<64 {
+        continuation.yield(UInt8(byte))
+    }
     continuation.finish()
 }
-let bytesWritten = try await stream.write(toFileAt: path)
+
+let bytesWritten = try await stream.write(
+    toFileAt: path,
+    options: .modifyFile(
+        createIfNecessary: true
+    )
+)
 print("Streamed bytes written: \(bytesWritten)")
+
 ```
+
+This approach is great for apps that create data as they run or need to handle streaming input from other sources. By using async sequences, you can write data as it arrives without blocking your application. 
+
+## Symbolic Links
+
+Symbolic links are common in many file systems, and SwiftNIO makes it simple to create and inspect them. You can easily create a symlink that points to another file and then check where it leads.
+
+Here is a straightforward example of creating and inspecting a symbolic link:
+
+```swift
+let linkPath = try await tmpPath.appending("link.lnk")
+try await fs.createSymbolicLink(
+    at: linkPath, 
+    withDestination: filePath
+)
+let destination = try await fs.destinationOfSymbolicLink(
+    at: linkPath
+)
+print("Symlink points to: \(destination)")
+```
+
+This code creates a symbolic link and then prints the path it points to.
+
 
 ## Summary
 
-The SwiftNIO file system API is flexible and modern. It supports async/await, handles errors clearly, and works efficiently with both small and very large files. Whether you’re building a server, a tool, or just need fast file I/O, these patterns will help you get started and go further.
+SwiftNIO’s file system API adds async/await to file and directory operations, making them flexible and efficient. You can create, write, read, and manage files and directories, work with symbolic links, and handle advanced streaming tasks—all with clear, non-blocking code. 
 
+If you want solid file system tools for your app but prefer not to rely on the larger Foundation framework, you should consider using the NIO file system module. By following these examples, you can quickly add strong file system features to your Swift applications.
