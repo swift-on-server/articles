@@ -368,7 +368,7 @@ jobs:
 +          key: "swiftpm-deploy-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
 +
 +      - name: Install Docker
-+        run: run: curl -fsSL https://get.docker.com | bash
++        run: curl -fsSL https://get.docker.com | bash
 
       - name: Build image
         run: docker build --network=host -t app:latest .
