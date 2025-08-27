@@ -334,10 +334,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-+      - name: Install zstd
++      - name: Install curl and zstd
 +        run: |
 +          apt-get update -y
-+          apt-get install -y zstd
++          apt-get install -y curl zstd
 +
 +      - name: Restore .build
 +        id: "restore-build"
@@ -381,6 +381,8 @@ Most of the new steps look familiar to you. You've already used them to speed up
 On top of those caching steps, you also need to make sure to:
 
 - Instruct GitHub Actions to run the CI file in a `swift:6.0-noble` container, instead of `ubuntu-latest`.
+
+- Install `curl` which will later be used in the Docker installation step.
 
 - Slightly modify the caching key to make sure your deployments don't go using your tests' caches! You've modified `swiftpm-tests-build` to `swiftpm-deploy-build` in the cache keys above, and that's enough.
 
