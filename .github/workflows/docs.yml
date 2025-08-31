@@ -22,7 +22,7 @@ jobs:
                     swift-id: "swift-6.1-RELEASE-ubuntu24.04"
 
             -   name: Install Unidoc
-                uses: tayloraswift/swift-unidoc-action@0.20.1
+                uses: tayloraswift/swift-unidoc-action@master
 
             #   This clobbers everything in the current directory!
             -   name: Checkout repository
@@ -41,7 +41,7 @@ jobs:
         name: macOS
         steps:
             -   name: Install Unidoc
-                uses: tayloraswift/swift-unidoc-action@0.20.1
+                uses: tayloraswift/swift-unidoc-action@master
 
             -   name: Checkout repository
                 uses: actions/checkout@v3
