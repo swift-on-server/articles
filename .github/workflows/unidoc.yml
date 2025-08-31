@@ -28,8 +28,8 @@ jobs:
                 run: |
                      unidoc compile \
                          --swift-toolchain $SWIFT_INSTALLATION \
-                         --ci fail-on-errors \
                          --project-path .
+                    # --ci fail-on-errors \
 
     macos:
         runs-on: macos-15

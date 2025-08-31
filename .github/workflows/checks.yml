@@ -8,13 +8,13 @@ on:
 jobs:
 
   bb_checks:
-    name: BB Checks
+    name: Binary Birds
     uses: BinaryBirds/github-workflows/.github/workflows/extra_soundness.yml@main
     with:
       local_swift_dependencies_check_enabled : true
 
   swiftlang_checks:
-    name: Swiftlang Checks
+    name: Swiftlang
     uses: swiftlang/github-workflows/.github/workflows/soundness.yml@main
     with:
       license_header_check_project_name: "Articles"
