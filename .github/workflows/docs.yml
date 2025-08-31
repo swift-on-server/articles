@@ -1,7 +1,4 @@
-# This workflow validates the package’s documentation. Because documentation building involves
-# compiling the package, this also checks that the package itself compiles successfully on each
-# supported platform.
-name: documentation
+name: Unidoc
 
 on:
     push:
@@ -24,17 +21,15 @@ jobs:
             -   name: Install Unidoc
                 uses: tayloraswift/swift-unidoc-action@master
 
-            #   This clobbers everything in the current directory!
             -   name: Checkout repository
                 uses: actions/checkout@v3
 
             -   name: Validate documentation
                 run: |
-                    unidoc --version
-                # unidoc compile \
-                #     --swift-toolchain $SWIFT_INSTALLATION \
-                #     --ci fail-on-errors \
-                #     --project-path .
+                     unidoc compile \
+                         --swift-toolchain $SWIFT_INSTALLATION \
+                         --ci fail-on-errors \
+                         --project-path .
 
     macos:
         runs-on: macos-15
@@ -49,8 +44,8 @@ jobs:
             -   name: Validate documentation
                 env:
                     DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
-                run: |
-                    unidoc --version  
-                # unidoc compile \
-                #     --ci fail-on-errors \
-                #     --project-path .
+                run: | 
+                    unidoc --version
+                #  unidoc compile \
+                #      --ci fail-on-errors \
+                #      --project-path .
