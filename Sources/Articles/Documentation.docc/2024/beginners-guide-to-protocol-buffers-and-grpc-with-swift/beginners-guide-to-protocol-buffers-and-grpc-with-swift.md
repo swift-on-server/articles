@@ -57,8 +57,12 @@ You can install the plugin using the following snippet, which will place the `pr
 ```sh
 git clone https://github.com/grpc/grpc-swift-protobuf.git
 cd grpc-swift-protobuf
+git checkout tags/1.3.0
 swift build -c release
+cp "$(swift build --show-bin-path -c release)/protoc-gen-swift" /Users/{me}/
 cp "$(swift build --show-bin-path -c release)/protoc-gen-grpc-swift" /Users/{me}/
+cd
+chmod +x protoc*
 ```
 
 The next step involves defining the data structure for a sample todo application by creating a `todo_messages.proto` file. This file will specify the models for the application. Below is the complete protobuf definition:
@@ -106,7 +110,7 @@ With the basics of the proto file covered, the next step is to generate a Swift 
 
 ```sh
 protoc \
-    --plugin=/Users/{me}/protoc-gen-grpc-swift \ 
+    --plugin=/Users/{me}/protoc-gen-swift \ 
     --swift_out=./ \
     todo_messages.proto
 ```
@@ -188,8 +192,8 @@ let package = Package(
         .macOS(.v15),
     ],
     dependencies: [
-        .package(url: "https://github.com/grpc/grpc-swift-protobuf", exact: "1.0.0-alpha.1"),
-        .package(url: "https://github.com/grpc/grpc-swift-nio-transport", exact: "1.0.0-alpha.1"),
+        .package(url: "https://github.com/grpc/grpc-swift-protobuf", exact: "1.3.0"),
+        .package(url: "https://github.com/grpc/grpc-swift-nio-transport", exact: "1.2.0"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0"),
     ],
     targets: [
@@ -213,7 +217,7 @@ It's also a good practice to retain the original `.proto` files for reference an
 With the generated data types and interfaces in place, the server-side interface can now be implemented using the gRPC library. Below is an example of a simple actor-based implementation that utilizes in-memory storage and fulfills the `TodoService` protocol requirements:
 
 ```swift
-actor TodoService: Todos_TodoService_ServiceProtocol {
+actor TodoService: Todos_TodoService.ServiceProtocol {
 
     var todos: [Todos_Todo]
     
@@ -303,12 +307,16 @@ struct Entrypoint: AsyncParsableCommand {
     func run() async throws {
         // 1.
         let server = GRPCServer(
-            transport: .http2NIOPosix(
-                address: .ipv4(host: hostname, port: port),
-                config: .defaults(transportSecurity: .plaintext)
-            ),
+            transport:
+                .http2NIOPosix(
+                    address: .ipv4(
+                        host: hostname,
+                        port: port
+                    ),
+                    transportSecurity: .plaintext
+                ),
+            
             services: [
-                // 2.
                 TodoService()
             ]
         )
