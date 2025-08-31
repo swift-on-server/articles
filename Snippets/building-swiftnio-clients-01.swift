@@ -1,7 +1,7 @@
+import HTTPTypes
 // snippet.imports
 import NIOCore
 import NIOHTTP1
-import HTTPTypes
 import NIOHTTPTypes
 import NIOHTTPTypesHTTP1
 import NIOPosix
@@ -39,7 +39,9 @@ struct HTTPClient {
             // 4
             channel.eventLoop.makeCompletedFuture {
                 try channel.pipeline.syncOperations.addHTTPClientHandlers()
-                try channel.pipeline.syncOperations.addHandler(HTTP1ToHTTPClientCodec())
+                try channel.pipeline.syncOperations.addHandler(
+                    HTTP1ToHTTPClientCodec()
+                )
             }
         }
         // snippet.end

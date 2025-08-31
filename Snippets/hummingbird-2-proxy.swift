@@ -5,6 +5,7 @@ import Logging
 import NIOCore
 import NIOPosix
 import ServiceLifecycle
+
 // snippet.end
 
 // snippet.forwarding
@@ -16,27 +17,38 @@ func forward(
 ) async throws -> Response {
     // 1.
     let query = request.uri.query.map { "?\($0)" } ?? ""
-    var clientRequest = HTTPClientRequest(url: "https://\(targetHost)\(request.uri.path)\(query)")
+    var clientRequest = HTTPClientRequest(
+        url: "https://\(targetHost)\(request.uri.path)\(query)"
+    )
     clientRequest.method = .init(request.method)
     clientRequest.headers = .init(request.headers)
 
     // 2.
-    let contentLength = if let header = request.headers[.contentLength], let value = Int(header) {
-        HTTPClientRequest.Body.Length.known(value)
-    } else {
-        HTTPClientRequest.Body.Length.unknown
-    }
+    let contentLength =
+        if let header = request.headers[.contentLength], let value = Int(header)
+        {
+            HTTPClientRequest.Body.Length.known(value)
+        }
+        else {
+            HTTPClientRequest.Body.Length.unknown
+        }
     clientRequest.body = .stream(
         request.body,
         length: contentLength
     )
 
     // 3.
-    let response = try await httpClient.execute(clientRequest, timeout: .seconds(60))
+    let response = try await httpClient.execute(
+        clientRequest,
+        timeout: .seconds(60)
+    )
 
     // 4.
     return Response(
-        status: HTTPResponse.Status(code: Int(response.status.code), reasonPhrase: response.status.reasonPhrase),
+        status: HTTPResponse.Status(
+            code: Int(response.status.code),
+            reasonPhrase: response.status.reasonPhrase
+        ),
         headers: HTTPFields(response.headers, splitCookie: false),
         body: ResponseBody(asyncSequence: response.body)
     )
@@ -48,7 +60,11 @@ struct ProxyServerMiddleware<Context: RequestContext>: RouterMiddleware {
     var httpClient: HTTPClient = .shared
     let targetHost: String
 
-    func handle(_ request: Request, context: Context, next: (Request, Context) async throws -> Response) async throws -> Response {
+    func handle(
+        _ request: Request,
+        context: Context,
+        next: (Request, Context) async throws -> Response
+    ) async throws -> Response {
         try await forward(
             request: request,
             targetHost: targetHost,
@@ -94,7 +110,8 @@ do {
 struct ProxyServerResponder<Context: RequestContext>: HTTPResponder {
     let targetHost: String
 
-    func respond(to request: Request, context: Context) async throws -> Response {
+    func respond(to request: Request, context: Context) async throws -> Response
+    {
         try await forward(
             request: request,
             targetHost: targetHost,
@@ -108,7 +125,9 @@ struct ProxyServerResponder<Context: RequestContext>: HTTPResponder {
 do {
     // snippet.setup-responder
     let app = Application(
-        responder: ProxyServerResponder<BasicRequestContext>(targetHost: "example.com")
+        responder: ProxyServerResponder<BasicRequestContext>(
+            targetHost: "example.com"
+        )
     )
     // snippet.end
 

@@ -1,8 +1,8 @@
+import Foundation
 import Hummingbird
 import HummingbirdWebSocket
 import MongoKitten
 import NIOCore
-import Foundation
 import ServiceLifecycle
 
 struct Post: Codable {
@@ -19,13 +19,19 @@ struct Post: Codable {
     }
 }
 
-func createPost(author: String, content: String, in db: MongoDatabase) async throws {
+func createPost(
+    author: String,
+    content: String,
+    in db: MongoDatabase
+)
+    async throws
+{
     // 1. Create the post
     let post = Post(author: author, content: content)
-    
+
     // 2. Get the posts collection
     let posts = db["posts"]
-    
+
     // 3. Insert the post
     try await posts.insertEncoded(post)
 }
@@ -37,7 +43,10 @@ func setupRoutes(router: Router<BasicRequestContext>, db: MongoDatabase) {
             let author: String
             let content: String
         }
-        let post = try await request.decode(as: CreatePostRequest.self, context: context)
+        let post = try await request.decode(
+            as: CreatePostRequest.self,
+            context: context
+        )
         try await createPost(author: post.author, content: post.content, in: db)
         return Response(status: .created)
     }
@@ -49,20 +58,21 @@ func setupRoutes(router: Router<BasicRequestContext>, db: MongoDatabase) {
 struct RealtimeMongoApp {
     static func main() async throws {
         // 1.
-        let db = try await MongoDatabase.connect(to: "mongodb://localhost/social_network")
-        
+        let db = try await MongoDatabase.connect(
+            to: "mongodb://localhost/social_network"
+        )
+
         // 2.
         let connectionManager = ConnectionManager(database: db)
 
-
         let router = Router(context: BasicRequestContext.self)
         setupRoutes(router: router, db: db)
-        
+
         // 4.
         var app = Application(
             router: router,
             server: .http1WebSocketUpgrade { request, channel, logger in
-                return .upgrade([:]) { inbound, outbound, context in
+                .upgrade([:]) { inbound, outbound, context in
                     try await connectionManager.withRegisteredClient(outbound) {
                         for try await _ in inbound {
                             // Drop any incoming data, we don't need it
@@ -75,27 +85,27 @@ struct RealtimeMongoApp {
 
         // 5.
         app.addServices(connectionManager)
-        
+
         // 6.
         try await app.runService()
     }
 }
-// snippet.end 
+// snippet.end
 
 // snippet.connection-manager
 actor ConnectionManager {
     private let database: MongoDatabase
     private var outboundConnections: [UUID: WebSocketOutboundWriter] = [:]
-    
+
     init(database: MongoDatabase) {
         self.database = database
     }
-    
+
     func broadcast(_ data: Data) async {
         guard let text = String(data: data, encoding: .utf8) else {
             return
         }
-        
+
         for connection in outboundConnections.values {
             try? await connection.write(.text(text))
         }
@@ -118,10 +128,10 @@ extension ConnectionManager: Service {
     func run() async throws {
         // 1.
         let posts = database["posts"]
-        
+
         // 2.
         let changes = try await posts.watch(type: Post.self)
-        
+
         // 3.
         for try await change in changes {
             // 4.

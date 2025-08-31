@@ -1,5 +1,5 @@
-import Hummingbird
 import Foundation
+import Hummingbird
 
 do {
     // snippet.custom_request_context
@@ -37,7 +37,11 @@ struct CustomContext: RequestContext {
 struct SimpleAuthMiddleware: RouterMiddleware {
     typealias Context = CustomContext
 
-    func handle(_ input: Request, context: Context, next: (Request, Context) async throws -> Output) async throws -> Response {
+    func handle(
+        _ input: Request,
+        context: Context,
+        next: (Request, Context) async throws -> Output
+    ) async throws -> Response {
         var context = context
         guard
             let token = input.headers[.authorization]
@@ -63,7 +67,11 @@ protocol AuthContext: RequestContext {
 
 // snippet.context_protocol_middleware
 struct AuthMiddleware<Context: AuthContext>: RouterMiddleware {
-    func handle(_ input: Request, context: Context, next: (Request, Context) async throws -> Output) async throws -> Response {
+    func handle(
+        _ input: Request,
+        context: Context,
+        next: (Request, Context) async throws -> Output
+    ) async throws -> Response {
         var context = context
         guard
             let token = input.headers[.authorization]

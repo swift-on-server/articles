@@ -4,26 +4,30 @@ import NIOPosix
 func runServer() async throws {
     // snippet.bootstrap
     // 1.
-    let server = try await ServerBootstrap(group: NIOSingletons.posixEventLoopGroup)
-        .bind(  // 2.
-            host: "0.0.0.0",  // 3.
-            port: 2048  // 4.
-        ) { channel in
-            // 5.
-            channel.eventLoop.makeCompletedFuture {
-                // Add any handlers for parsing or serializing messages here
-                // We don't need any for this echo example
+    let server = try await ServerBootstrap(
+        group: NIOSingletons.posixEventLoopGroup
+    )
+    .bind(  // 2.
+        host: "0.0.0.0",  // 3.
+        port: 2048  // 4.
+    ) { channel in
+        // 5.
+        channel.eventLoop.makeCompletedFuture {
+            // Add any handlers for parsing or serializing messages here
+            // We don't need any for this echo example
 
-                // 6.
-                return try NIOAsyncChannel(
-                    wrappingChannelSynchronously: channel,
-                    configuration: NIOAsyncChannel.Configuration(
-                        inboundType: ByteBuffer.self,  // We'll read the raw bytes from the socket
-                        outboundType: ByteBuffer.self  // We'll also write raw bytes to the socket
-                    )
+            // 6.
+            try NIOAsyncChannel(
+                wrappingChannelSynchronously: channel,
+                configuration: NIOAsyncChannel.Configuration(
+                    // We'll read the raw bytes from the socket
+                    inboundType: ByteBuffer.self,
+                    // We'll also write raw bytes to the socket
+                    outboundType: ByteBuffer.self
                 )
-            }
+            )
         }
+    }
     // snippet.end
 
     // We create a task group to manage the lifetime of our client connections
@@ -40,7 +44,8 @@ func runServer() async throws {
                     // 5.
                     do {
                         try await handleClient(client)
-                    } catch {
+                    }
+                    catch {
                         // Error while handling the connection.
                         // This needs to be silenced or gracefully handled
                         // as `throw`ing an error here would close the TCP server
@@ -52,7 +57,9 @@ func runServer() async throws {
     // snippet.end
 
     // snippet.handleClient
-    func handleClient(_ client: NIOAsyncChannel<ByteBuffer, ByteBuffer>)
+    func handleClient(
+        _ client: NIOAsyncChannel<ByteBuffer, ByteBuffer>
+    )
         async throws
     {
         // 1.

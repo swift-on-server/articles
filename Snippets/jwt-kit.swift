@@ -1,5 +1,5 @@
-import JWTKit
 import Foundation
+import JWTKit
 
 // snippet.key_collection_init
 let keyCollection = JWTKeyCollection()
@@ -80,7 +80,8 @@ struct UserPayload: JWTPayload {
 
     init(from user: User) {
         self.userID = user.id
-        self.expiration = .init(value: .init(timeIntervalSinceNow: 3600))  // Token expires in 1 hour
+        // Token expires in 1 hour
+        self.expiration = .init(value: .init(timeIntervalSinceNow: 3600))
         self.roles = user.roles
     }
 }
