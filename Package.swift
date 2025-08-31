@@ -17,7 +17,7 @@ let package = Package(
         .package(url: "https://github.com/hummingbird-project/swift-jobs", from: "1.0.0-rc.1"),
         .package(url: "https://github.com/swift-server/async-http-client", from: "1.21.1"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0"),
-        .package(url: "https://github.com/apple/swift-nio", from: "2.65.0"),
+        .package(url: "https://github.com/apple/swift-nio", from: "2.86.0"),
         .package(url: "https://github.com/apple/swift-nio-extras", from: "1.20.0"),
         .package(url: "https://github.com/apple/swift-log", from: "1.5.4"),
         .package(url: "https://github.com/apple/swift-http-types", from: "1.0.0"),
