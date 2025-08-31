@@ -43,3 +43,6 @@ test-with-coverage:
 clean:
 	rm -rf .build
 
+docker-run:
+	docker run --rm -v $(pwd):/app -it swift:6.0
+
