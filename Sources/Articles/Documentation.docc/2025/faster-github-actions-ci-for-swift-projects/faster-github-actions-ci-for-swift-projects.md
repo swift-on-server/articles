@@ -295,15 +295,9 @@ You need to pull out the build step out of the Dockerfile and move it to the dep
 Simplify your Dockerfile like so. The code-diff below is based on [Vapor template's Dockerfile](https://github.com/vapor/template/blob/main/Dockerfile), which is also what [Hummingbird's](https://github.com/hummingbird-project/template/blob/main/Dockerfile) is based on.
 
 ```diff
--# Install OS updates
--RUN export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true \
--    && apt-get -q update \
--    && apt-get -q dist-upgrade -y \
--    && apt-get install -y libjemalloc-dev
--
--# Set up a build area
--WORKDIR /build
--
+# Set up a build area
+WORKDIR /build
+
 -# First just resolve dependencies.
 -# This creates a cached layer that can be reused
 -# as long as your Package.swift/Package.resolved
@@ -312,7 +306,8 @@ Simplify your Dockerfile like so. The code-diff below is based on [Vapor templat
 -RUN swift package resolve \
 -        $([ -f ./Package.resolved ] && echo "--force-resolved-versions" || true)
 
-+WORKDIR /staging
+# Copy entire repo into container
+COPY . .
 
 -# Build the application, with optimizations, with static linking, and using jemalloc
 -# N.B.: The static version of jemalloc is incompatible with the static Swift runtime.
@@ -320,60 +315,9 @@ Simplify your Dockerfile like so. The code-diff below is based on [Vapor templat
 -        --product App \
 -        --static-swift-stdlib \
 -        -Xlinker -ljemalloc
--
--# Switch to the staging area
--WORKDIR /staging
-
-# Copy main executable to staging area
--RUN cp "$(swift build --package-path /build -c release --show-bin-path)/App" ./
-+RUN cp "$(swift build -c release --show-bin-path)/App" ./
-
-# Copy static swift backtracer binary to staging area
-RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
-
-# Copy resources bundled by SPM to staging area
--RUN find -L "$(swift build --package-path /build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
-+RUN find -L "$(swift build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
-
-# Copy any resources from the public directory and views directory if the directories exist
-# Ensure that by default, neither the directory nor any of its contents are writable.
--RUN [ -d /build/Public ] && { mv /build/Public ./Public && chmod -R a-w ./Public; } || true
--RUN [ -d /build/Resources ] && { mv /build/Resources ./Resources && chmod -R a-w ./Resources; } || true
-+RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
-+RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
 ```
 
-This is how your Dockerfile will look like after the changes:
-
-```dockerfile
-# ================================
-# Build image
-# ================================
-FROM swift:6.0-noble AS build
-
-WORKDIR /staging
-
-# Copy entire repo into container
-COPY . .
-
-# Copy main executable to staging area
-RUN cp "$(swift build -c release --show-bin-path)/App" ./
-
-# Copy static swift backtracer binary to staging area
-RUN cp "/usr/libexec/swift/linux/swift-backtrace-static" ./
-
-# Copy resources bundled by SPM to staging area
-RUN find -L "$(swift build -c release --show-bin-path)/" -regex '.*\.resources$' -exec cp -Ra {} ./ \;
-
-# Copy any resources from the public directory and views directory if the directories exist
-# Ensure that by default, neither the directory nor any of its contents are writable.
-RUN [ -d ./Public ] && { chmod -R a-w ./Public; } || true
-RUN [ -d ./Resources ] && { chmod -R a-w ./Resources; } || true
-```
-
-Make sure you substitute `App` in the Dockerfile above if you've changed your main executable's name from the default `App` to something else.
-
-You're no longer building your app in the Dockerfile. You copy the whole repository to the Dockerfile like before but unlike before you expect the repository to already contain the build artifacts and the executable.
+You'll no longer build your app in the Dockerfile. You copy the whole repository to the Dockerfile like before but unlike before you expect the repository to already contain the build artifacts and the executable.
 
 Let's not let down your Dockerfile! You need to modify the CI deployment file to not only build the project, but also to use caching like you've learned before:
 
@@ -390,10 +334,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-+      - name: Install zstd
++      - name: Install curl and zstd
 +        run: |
 +          apt-get update -y
-+          apt-get install -y zstd
++          apt-get install -y curl zstd
 +
 +      - name: Restore .build
 +        id: "restore-build"
@@ -424,27 +368,7 @@ jobs:
 +          key: "swiftpm-deploy-build-${{ runner.os }}-${{ github.event.pull_request.base.sha || github.event.after }}"
 +
 +      - name: Install Docker
-+        run: |
-+          set -eu
-+
-+          # Installation commands from https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository:
-+
-+          # Add Docker's official GPG key:
-+          apt-get update -y
-+          apt-get install ca-certificates curl gnupg -y
-+          install -m 0755 -d /etc/apt/keyrings
-+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-+          chmod a+r /etc/apt/keyrings/docker.gpg
-+
-+          # Add the repository to Apt sources:
-+          echo \
-+            "deb [arch=\"$(dpkg --print-architecture)\" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-+              \"$(. /etc/os-release && echo "$VERSION_CODENAME")\" stable" |
-+            tee /etc/apt/sources.list.d/docker.list >/dev/null
-+          apt-get update -y
-+
-+          # Install Docker:
-+          apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin -y
++        run: curl -fsSL https://get.docker.com | bash
 
       - name: Build image
         run: docker build --network=host -t app:latest .
@@ -457,6 +381,8 @@ Most of the new steps look familiar to you. You've already used them to speed up
 On top of those caching steps, you also need to make sure to:
 
 - Instruct GitHub Actions to run the CI file in a `swift:6.0-noble` container, instead of `ubuntu-latest`.
+
+- Install `curl` which will later be used in the Docker installation step.
 
 - Slightly modify the caching key to make sure your deployments don't go using your tests' caches! You've modified `swiftpm-tests-build` to `swiftpm-deploy-build` in the cache keys above, and that's enough.
 
