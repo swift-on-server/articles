@@ -1,10 +1,12 @@
-import MongoKitten
 import Foundation
+import MongoKitten
 
 // snippet.connection
-let db = try await MongoDatabase.connect(to: "mongodb://localhost:27017/social_network")
+let db = try await MongoDatabase.connect(
+    to: "mongodb://localhost:27017/social_network"
+)
 print("Connected to MongoDB!")
-// snippet.end 
+// snippet.end
 
 // snippet.models
 struct Post: Codable {
@@ -12,7 +14,7 @@ struct Post: Codable {
     let author: String
     let content: String
     let createdAt: Date
-    
+
     init(author: String, content: String) {
         self._id = ObjectId()
         self.author = author
@@ -26,10 +28,10 @@ struct Post: Codable {
 func createPost(author: String, content: String) async throws {
     // 1. Create the post
     let post = Post(author: author, content: content)
-    
+
     // 2. Get the posts collection
     let posts = db["posts"]
-    
+
     // 3. Insert the post
     try await posts.insertEncoded(post)
 }
@@ -59,7 +61,7 @@ let recentPosts = try await db["posts"]
     .limit(10)
     .decode(Post.self)
     .drain()
-// snippet.end 
+// snippet.end
 
 // snippet.bson
 struct Person: Codable {
@@ -74,10 +76,10 @@ let document: Document = [
     "name": "Swift Developer",
     "age": 25,
     "tags": ["swift", "mongodb", "backend"] as Document,
-    "active": true
+    "active": true,
 ]
 
 // Converting between BSON and Codable
 let bsonDocument = try BSONEncoder().encode(document)
 let decodedPerson = try BSONDecoder().decode(Person.self, from: bsonDocument)
-// snippet.end 
+// snippet.end

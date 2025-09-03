@@ -327,7 +327,7 @@ However, heavy workload _can_ be run on a custom executor. Using the pattern sho
 
 ### Inheriting Actor Isolation
 
-Starting with Swift 6, a variant of ``AsyncIteratorProtocol.next()`` is available.
+Starting with Swift 6, a variant of ``AsyncIteratorProtocol.next(isolation:)`` is available.
 
 ```swift
 mutating func next(isolation actor: isolated (any Actor)? = #isolation) async throws -> Element?

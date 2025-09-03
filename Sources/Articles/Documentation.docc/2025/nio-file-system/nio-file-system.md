@@ -24,7 +24,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/apple/swift-nio", 
-            from: "2.0.0"
+            from: "2.86.0"
         ),
     ],
     targets: [
@@ -277,10 +277,29 @@ let bytesWritten = try await stream.write(
     )
 )
 print("Streamed bytes written: \(bytesWritten)")
-
 ```
 
 This approach is great for apps that create data as they run or need to handle streaming input from other sources. By using async sequences, you can write data as it arrives without blocking your application. 
+
+The next snippet demonstrates how to construct an `AsyncThrowingStream` that yields byte chunks and then use `FileChunks` to consume them. The sample stream is manually fed with three `ByteBuffer` values, each containing a small array of bytes. Calling `finish()` marks the end of the sequence, so no more values can be yielded afterward:
+
+```swift
+let stream = AsyncThrowingStream<ByteBuffer, Error> {
+    $0.yield(ByteBuffer(bytes: [0, 1, 2]))
+    $0.yield(ByteBuffer(bytes: [3, 4, 5]))
+    $0.yield(ByteBuffer(bytes: [6, 7, 8]))
+    $0.finish()
+}
+
+let fileChunks = FileChunks(wrapping: stream)
+var iterator = fileChunks.makeAsyncIterator()
+
+while let chunk = try await iterator.next() {
+    print("Received chunk:", chunk)
+}
+```
+
+Here the while let loop keeps awaiting values from the stream until `next()` yields `nil`. This makes it easier to process streams of arbitrary length and keeps the iteration logic clear and concise. It’s a natural fit for handling file or network data chunk by chunk.
 
 ## Symbolic Links
 

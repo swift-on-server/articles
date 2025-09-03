@@ -22,10 +22,6 @@ struct BookOrder: Identifiable {
 struct Book {
     let price: Double
 
-    init(price: Double) {
-        self.price = price
-    }
-
     func buy() async throws -> BookOrder {
         BookOrder(book: self)
     }

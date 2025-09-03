@@ -9,13 +9,13 @@ import Hummingbird
 
         // snippet.health
         router.get("/health") { _, _ -> HTTPResponse.Status in
-            return .ok
+            .ok
         }
         // snippet.end
 
         // snippet.basic_route
         router.get("/") { _, _ -> String in
-            return "My app works!"
+            "My app works!"
         }
         // snippet.end
 
@@ -25,7 +25,7 @@ import Hummingbird
         }
 
         router.get("/message") { _, _ -> MyResponse in
-            return MyResponse(message: "Hello, world!")
+            MyResponse(message: "Hello, world!")
         }
         // snippet.end
 

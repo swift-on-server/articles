@@ -177,11 +177,6 @@ actor AppState2 {
 struct DelayedElementEmitter<Element: Sendable>: AsyncSequence {
     let elements: [Element]
     let delay: Duration
-
-    init(elements: [Element], delay: Duration) {
-        self.elements = elements
-        self.delay = delay
-    }
 }
 // snippet.end
 // snippet.delayedelementiterator

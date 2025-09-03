@@ -2,7 +2,7 @@ SHELL=/bin/bash
 
 baseUrl = https://raw.githubusercontent.com/BinaryBirds/github-workflows/refs/heads/main/scripts
 
-check: symlinks deps
+check: symlinks deps lint
 
 symlinks:
 	curl -s $(baseUrl)/check-broken-symlinks.sh | bash
@@ -22,7 +22,11 @@ fmt:
 format:
 	curl -s $(baseUrl)/run-swift-format.sh | bash -s -- --fix
 
+headers:
+	curl -s $(baseUrl)/check-swift-headers.sh | bash
 
+fix-headers:
+	curl -s $(baseUrl)/check-swift-headers.sh | bash -s -- --fix
 
 build:
 	swift build
@@ -41,3 +45,4 @@ clean:
 
 docker-run:
 	docker run --rm -v $(pwd):/app -it swift:6.0
+

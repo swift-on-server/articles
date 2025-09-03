@@ -4,6 +4,7 @@ import Foundation
 final class SharedState: @unchecked Sendable {
     private var _state: Int = 0
     let lock = NSLock()
+    /// state
     public var state: Int {
         get {
             lock.lock()
